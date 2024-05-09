@@ -1,0 +1,12 @@
+whitelist_messages:
+  - "battery_status"
+  - "vehicle_global_position"
+  - "vehicle_local_position"
+  - "vehicle_attitude"
+  - "vehicle_status"
+  - "actuator_outputs"
+  - "sensor_baro"
+blacklist_headers:
+  - "timestamp_sample"
+  - "device_id"
+  - "error_count"
