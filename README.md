@@ -15,51 +15,51 @@ description: Includes real flights and SITL flight. Normal and anomalous.
 
 # Folder Structure
 
-📂 Data
-├─ 📂 hardware
-│  ├─ 📂 autonomous
-│  │  ├─ 📂 different_paths
-│  │  │  ├─ ❓ [README.md](./hardware/autonomous/different_paths/README.md)
-│  │  │  ├─ 💾 `different_paths_0.ulog`
-│  │  │  └─ 💾 `<...>.ulog`  
+📂 Data  
+├─ 📂 hardware  
+│  ├─ 📂 autonomous  
+│  │  ├─ 📂 different_paths  
+│  │  │  ├─ ❓ [README.md](./hardware/autonomous/different_paths/README.md)  
+│  │  │  ├─ 💾 `different_paths_0.ulog`  
+│  │  │  └─ 💾 `<...>.ulog`    
+│  │  │    
+│  │  ├─ 📂 different_terrains  
+│  │  │  ├─ ❓ [README.md](./hardware/autonomous/different_terrains/README.md)   
+│  │  │  ├─ 💾 `different_terrains_0.ulog`  
+│  │  │  └─ 💾 `<...>.ulog`    
+│  │  │    
+│  │  ├─ 📂 linear_paths  
+│  │  │  ├─ ❓ [README.md](./hardware/autonomous/linear_paths/README.md)   
+│  │  │  ├─ 💾 `linear_paths_0.ulog`  
+│  │  │  └─ 💾 `<...>.ulog`    
 │  │  │  
-│  │  ├─ 📂 different_terrains
-│  │  │  ├─ ❓ [README.md](./hardware/autonomous/different_terrains/README.md) 
-│  │  │  ├─ 💾 `different_terrains_0.ulog`
-│  │  │  └─ 💾 `<...>.ulog`  
-│  │  │  
-│  │  ├─ 📂 linear_paths
-│  │  │  ├─ ❓ [README.md](./hardware/autonomous/linear_paths/README.md) 
-│  │  │  ├─ 💾 `linear_paths_0.ulog`
-│  │  │  └─ 💾 `<...>.ulog`  
-│  │  │
-│  │  └─ 📂 takeoff_land
-│  │     ├─ ❓ [README.md](./hardware/autonomous/takeoff_land/README.md) 
-│  │     ├─ 💾 `takeoff_land_0.ulog`
-│  │     └─ 💾 `<...>.ulog`  
-│  │
-│  ├─ 📂 gimbal_camera_video
-│  │  ├─ 📂 natsbags
-│  │  │  ├─ 💾 `different_paths_0.gz`
-│  │  │  └─ 💾 `<...>.gz`  
-│  │  │  
-│  │  └─ 📂 videos
-│  │     ├─ 💾 `different_paths_0.mp4`
-│  │     └─ 💾 `<...>.mp4`  
-│  │
-│  └─ 📂 manual
-│     └─ 📂 fast_movements
-│        ├─ ❓ [README.md](./hardware/manual/fast_movements/README.md) 
-│        ├─ 💾 `fast_movements_0.ulog`
-│        └─ 💾 `<...>.ulog`  
-│
-├─ 📂 simulation
-│  ├─ 📂 faulty
-│  └─ 📂 normal
-│   
-├─ `filter.yaml`
-├─ ❓ `README.md`
-└─ 🐍 `ulog_converter.py`
+│  │  └─ 📂 takeoff_land  
+│  │     ├─ ❓ [README.md](./hardware/autonomous/takeoff_land/README.md)  
+│  │     ├─ 💾 `takeoff_land_0.ulog`  
+│  │     └─ 💾 `<...>.ulog`    
+│  │  
+│  ├─ 📂 gimbal_camera_video  
+│  │  ├─ 📂 natsbags  
+│  │  │  ├─ 💾 `different_paths_0.gz`  
+│  │  │  └─ 💾 `<...>.gz`    
+│  │  │    
+│  │  └─ 📂 videos  
+│  │     ├─ 💾 `different_paths_0.mp4`  
+│  │     └─ 💾 `<...>.mp4`    
+│  │  
+│  └─ 📂 manual  
+│     └─ 📂 fast_movements  
+│        ├─ ❓ [README.md](./hardware/manual/fast_movements/README.md)   
+│        ├─ 💾 `fast_movements_0.ulog`  
+│        └─ 💾 `<...>.ulog`    
+│  
+├─ 📂 simulation  
+│  ├─ 📂 faulty  
+│  └─ 📂 normal  
+│     
+├─ `filter.yaml`  
+├─ ❓ `README.md`  
+└─ 🐍 `ulog_converter.py`  
 
 # Data Conversion and Pre-Processing
 
