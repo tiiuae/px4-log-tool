@@ -6,19 +6,11 @@ import pandas as pd
 def plot_battery_status(df, timestamp_column, battery_status_column):
     df = df.copy()
     df[timestamp_column] = pd.to_datetime(df[timestamp_column], unit='us')
-
-    # Normalize timestamps to start from zero
-    min_time = df[timestamp_column].min()
-    df[timestamp_column] = (df[timestamp_column] - min_time).dt.total_seconds()
-
     df.set_index(timestamp_column, inplace=True)
-
-    # Interpolate to fill NaN values linearly
-    df[battery_status_column] = df[battery_status_column].interpolate(method='linear')
 
     # Plotting
     plt.figure(figsize=(10, 6))
-    plt.plot(df.index, df[battery_status_column], marker='o', linestyle='-')
+    plt.plot(df.index, df[battery_status_column], marker='.', linestyle='-')
     plt.title('Battery Status Over Time')
     plt.xlabel('Time (seconds from start)')
     plt.ylabel('Battery Status Remaining (%)')
@@ -33,7 +25,7 @@ def filter_first_ten_percent(df, timestamp_column):
     df.set_index(timestamp_column, inplace=True)
 
     total_duration = df.index.max() - df.index.min()  # Correct total duration calculation
-    end_time_first_10 = df.index.min() + 0.01 * total_duration  # Calculate the 10% endpoint
+    end_time_first_10 = df.index.min() + 0.05 * total_duration  # Calculate the 10% endpoint
 
     # Filter the dataframe to the first 10% of the total time
     filtered_df = df[df.index <= end_time_first_10].reset_index()
@@ -54,7 +46,7 @@ def resample_data(df, target_frequency_hz, num_method='mean', cat_method='ffill'
     Parameters:
     df (pd.DataFrame): DataFrame containing the data to resample.
     timestamp_column (str): Column name containing the timestamp data.
-    target_frequency_hz (int): The target frequency for resampling in Hz.
+    target_frequency_hz (float): The target frequency for resampling in Hz.
     num_method (str, optional): The method to use for downsampling numerical data ('mean', 'median', 'max', 'min', 'sum'). Default is 'mean'.
     cat_method (str, optional): The method to use for downsampling categorical data ('ffill', 'bfill', 'mode'). Default is 'ffill'.
     interpolate_numerical (bool, optional): Whether to apply interpolation to numerical data after resampling. Default is False.
@@ -63,6 +55,8 @@ def resample_data(df, target_frequency_hz, num_method='mean', cat_method='ffill'
     Returns:
     pd.DataFrame: A DataFrame resampled to the target frequency.
     """
+    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='us')
+
     # Set the timestamp column as the index if it is not already
     if df.index.name != 'timestamp':
         df = df.set_index('timestamp')
@@ -109,9 +103,10 @@ min_time = filtered_df['timestamp'].min()
 filtered_df['timestamp'] = filtered_df['timestamp'] - min_time
 
 plot_battery_status(filtered_df, 'timestamp', 'BatteryStatus0_voltage_v')
-filtered_df = filter_first_ten_percent(filtered_df, 'timestamp')
-plot_battery_status(filtered_df, 'timestamp', 'BatteryStatus0_voltage_v')
+# filtered_df = filter_first_ten_percent(filtered_df, 'timestamp')
+# plot_battery_status(filtered_df, 'timestamp', 'BatteryStatus0_voltage_v')
 
-resampled_df = resample_data(filtered_df, target_frequency_hz=16, num_method='mean', cat_method='ffill', interpolate_numerical=True)
+
+resampled_df = resample_data(filtered_df, target_frequency_hz=1, num_method='mean', cat_method='ffill', interpolate_numerical=True)
 
 plot_battery_status(resampled_df, 'timestamp', 'BatteryStatus0_voltage_v')
