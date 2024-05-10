@@ -1,0 +1,343 @@
+,,,Alias,Name,Datatype,Unit,Dataclass,Description
+SensorAccel,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,SensorAccel_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,SensorAccel_device_id,device_id,Integer,,Categorical,Unique device ID for the sensor that does not change between power cycles
+,,,SensorAccel_x,x,Float,m/s^2,Numerical,Acceleration in x-axis
+,,,SensorAccel_y,y,Float,m/s^2,Numerical,Acceleration in y-axis
+,,,SensorAccel_z,z,Float,m/s^2,Numerical,Acceleration in z-axis
+,,,SensorAccel_temperature,temperature,Integer,degree Celsius,Numerical,Sensor temperature
+,,,SensorAccel_error_count,error_count,Integer,,Categorical,Errors detected during device operation
+,,,SensorAccel_clip_counter,clip_counter,Integer,,Categorical,Clip count per axis in the sample period
+,,,SensorAccel_samples,samples,Integer,,Categorical,Number of raw samples that went into this message
+SensorGyro,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,SensorGyro_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,SensorGyro_device_id,device_id,Integer,,Categorical,Unique device ID for the sensor that does not change between power cycles
+,,,SensorGyro_x,x,Float,rad/s,Numerical,Angular velocity in x-axis
+,,,SensorGyro_y,y,Float,rad/s,Numerical,Angular velocity in y-axis
+,,,SensorGyro_z,z,Float,rad/s,Numerical,Angular velocity in z-axis
+,,,SensorGyro_temperature,temperature,Integer,degree Celsius,Numerical,Sensor temperature
+,,,SensorGyro_error_count,error_count,Integer,,Categorical,Errors detected during device operation
+,,,SensorGyro_clip_counter,clip_counter,Integer,,Categorical,Clip count per axis in the sample period
+,,,SensorGyro_samples,samples,Integer,,Categorical,Number of raw samples that went into this message
+SensorMag,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,SensorMag_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,SensorMag_device_id,device_id,Integer,,Categorical,Unique device ID for the sensor that does not change between power cycles
+,,,SensorMag_x,x,Float,Gauss,Numerical,Magnetic field in the FRD board frame x-axis
+,,,SensorMag_y,y,Float,Gauss,Numerical,Magnetic field in the FRD board frame y-axis
+,,,SensorMag_z,z,Float,Gauss,Numerical,Magnetic field in the FRD board frame z-axis
+,,,SensorMag_temperature,temperature,Integer,degree Celsius,Numerical,Sensor temperature
+,,,SensorMag_error_count,error_count,Integer,,Categorical,Errors detected during device operation
+SensorBaro,,,,,,,Categorical,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,SensorBaro_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,SensorBaro_device_id,device_id,Integer,,Categorical,Unique device ID for the sensor that does not change between power cycles
+,,,SensorBaro_pressure,pressure,Float,Pascals,Numerical,Static pressure measurement
+,,,SensorBaro_temperature,temperature,Integer,degree Celsius,Numerical,Sensor temperature
+,,,SensorBaro_error_count,error_count,Integer,,Categorical,Errors detected during device operation
+SensorGps,,,,,,,Categorical,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,SensorGps_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,SensorGps_device_id,device_id,Integer,,Categorical,Unique device ID for the sensor that does not change between power cycles
+,,,SensorGps_latitude_deg,latitude_deg,Float,degrees,Numerical,"Latitude, allows centimeter level RTK precision, in WGS84 coordinates"
+,,,SensorGps_longitude_deg,longitude_deg,Float,degrees,Numerical,"Longitude, allows centimeter level RTK precision, in WGS84 coordinates"
+,,,SensorGps_altitude_msl_m,altitude_msl_m,Float,metres,Numerical,Altitude above mean sea level
+,,,SensorGps_altitude_ellipsoid_m,altitude_ellipsoid_m,Float,metres,Numerical,Altitude above ellipsoid
+,,,SensorGps_s_variance_m_s,s_variance_m_s,Float,m/s^2,Numerical,GPS speed accuracy estimate
+,,,SensorGps_c_variance_rad,c_variance_rad,Float,radians,Numerical,GPS course accuracy estimate
+,,,SensorGps_fix_type,fix_type,Integer,,Categorical,"Some applications will not use the value of this field unless it is at least two, so always correctly fill in the fix. [0-1: no fix; 2: 2D fix; 3: 3D fix; 4: RTCM code differential; 5: Real-Time Kinematic - float; 6: Real-Time Kinematic - fixed; 8: Extrapolated]"
+,,,SensorGps_eph,eph,Float,metres,Numerical,GPS horizontal position accuracy
+,,,SensorGps_epv,epv,Float,metres,Numerical,GPS vertical position accuracy
+,,,SensorGps_hdop,hdop,Float,,Numerical,Horizontal dilution of precision
+,,,SensorGps_vdop,vdop,Float,,Numerical,Vertical dilution of precision
+,,,SensorGps_noise_per_ms,noise_per_ms,Integer,per millisecond,Numerical,GPS noise
+,,,SensorGps_automatic_gain_control,automatic_gain_control,Integer,,Categorical,Automatic gain control monitor
+,,,SensorGps_jamming_state,jamming_state,Integer,,Categorical,Indicates whether jamming has been detected or suspected by the receivers. [0: Unknown; 1: OK; 2: Warning; 3: Critical]
+,,,SensorGps_jamming_indicator,jamming_indicator,Integer,,Categorical,Indicates jamming is occurring
+,,,SensorGps_spoofing_state,spoofing_state,Integer,,Categorical,Indicates whether spoofing has been detected or suspected by the receivers. [0: Unknown; 1: OK; 2: Warning; 3: Critical]
+,,,SensorGps_vel_m_s,vel_m_s,Float,m/s,Numerical,GPS ground speed
+,,,SensorGps_vel_n_m_s,vel_n_m_s,Float,m/s,Numerical,GPS North velocity
+,,,SensorGps_vel_e_m_s,vel_e_m_s,Float,m/s,Numerical,GPS East velocity
+,,,SensorGps_vel_d_m_s,vel_d_m_s,Float,m/s,Numerical,GPS down velocity
+,,,SensorGps_cog_rad,cog_rad,Float,radians,Numerical,"Course over ground (NOT heading, but direction of movement). [-PI..PI]"
+,,,SensorGps_vel_ned_valid,vel_ned_valid,Boolean,,Categorical,True if NED (north-east-down) velocity is valid
+,,,SensorGps_timestamp_time_relative,timestamp_time_relative,Integer,microseconds,Numerical,timestamp + timestamp_time_relative = Time of the UTC timestamp since system start
+,,,SensorGps_time_utc_usec,time_utc_usec,Integer,microseconds,Numerical,"This is the timestamp which comes from the gps module. It might be unavailable right after cold start, indicated by a value of 0"
+,,,SensorGps_satellites_used,satellites_used,Integer,,Categorical,Number of satellites used
+,,,SensorGps_heading,heading,Float,radians,Numerical,"Heading angle of XYZ body frame relative to NED. Set to NaN if not available and updated (used for dual antenna GPS). [-PI, PI]"
+,,,SensorGps_heading_offset,heading_offset,Float,radians,Numerical,"Heading offset of dual antenna array in body frame. Set to NaN if not applicable. [-PI, PI]"
+,,,SensorGps_heading_accuracy,heading_accuracy,Float,radians,Numerical,"Heading accuracy. [0, 2PI]"
+,,,SensorGps_rtcm_injection_rate,rtcm_injection_rate,Float,Hz,Numerical,RTCM message injection rate
+,,,SensorGps_selected_rtcm_instance,selected_rtcm_instance,Integer,,Categorical,uORB instance that is being used for RTCM corrections
+,,,SensorGps_rtcm_crc_failed,rtcm_crc_failed,Boolean,,Categorical,Indicates if the RTCM message was used successfully by the receiver
+,,,SensorGps_rtcm_msg_used,rtcm_msg_used,Integer,,Categorical,Indicates if the RTCM message was used successfully by the receiver
+VehicleLocalPosition,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,VehicleLocalPosition_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,VehicleLocalPosition_xy_valid,xy_valid,Boolean,,Categorical,Are x and y valid
+,,,VehicleLocalPosition_z_valid,z_valid,Boolean,,Categorical,Is z valid
+,,,VehicleLocalPosition_v_xy_valid,v_xy_valid,Boolean,,Categorical,Is vx and vy valid
+,,,VehicleLocalPosition_v_z_valid,v_z_valid,Boolean,,Categorical,Is vz valid
+,,,VehicleLocalPosition_x,x,Float,metres,Numerical,North position in NED earth-fixed frame
+,,,VehicleLocalPosition_y,y,Float,metres,Numerical,East position in NED earth-fixed frame
+,,,VehicleLocalPosition_z,z,Float,metres,Numerical,Down position (negative altitude) in NED earth-fixed frame
+,,,VehicleLocalPosition_delta_x,delta_xy_0,Float,metres,Numerical,Amount of lateral shift of position estimate in latest reset in x
+,,,VehicleLocalPosition_delta_y,delta_xy_1,Float,metres,Numerical,Amount of lateral shift of position estimate in latest reset in y
+,,,VehicleLocalPosition_xy_reset_counter,xy_reset_counter,Integer,,Categorical,Index of latest lateral position estimate reset
+,,,VehicleLocalPosition_delta_z,delta_z,Float,metres,Numerical,Amount of vertical shift of position estimate in latest reset
+,,,VehicleLocalPosition_z_reset_counter,z_reset_counter,Integer,,Categorical,Index of latest vertical position estimate reset
+,,,VehicleLocalPosition_vx,vx,Float,m/s,Numerical,North velocity in NED earth-fixed frame
+,,,VehicleLocalPosition_vy,vy,Float,m/s,Numerical,East velocity in NED earth-fixed frame
+,,,VehicleLocalPosition_vz,vz,Float,m/s,Numerical,Down velocity in NED earth-fixed frame
+,,,VehicleLocalPosition_z_deriv,z_deriv,Float,m/s,Numerical,Down position in time derivative of NED earth-fixed frame
+,,,VehicleLocalPosition_delta_vx,delta_vxy_0,Float,m/s,Numerical,Amount of lateral shift of velocity estimate in latest reset in x
+,,,VehicleLocalPosition_delta_vy,delta_vxy_1,Float,m/s,Numerical,Amount of lateral shift of velocity estimate in latest reset in y
+,,,VehicleLocalPosition_vxy_reset_counter,vxy_reset_counter,Integer,,Categorical,Index of latest lateral velocity estimate reset
+,,,VehicleLocalPosition_delta_vz,delta_vz,Float,m/s,Numerical,Amount of vertical shift of velocity estimate in latest reset
+,,,VehicleLocalPosition_vz_reset_counter,vz_reset_counter,Integer,,Categorical,Index of latest vertical velocity estimate reset
+,,,VehicleLocalPosition_ax,ax,Float,m/s^2,Numerical,North velocity derivative in NED earth-fixed frame
+,,,VehicleLocalPosition_ay,ay,Float,m/s^2,Numerical,East velocity derivative in NED earth-fixed frame
+,,,VehicleLocalPosition_az,az,Float,m/s^2,Numerical,Down velocity derivative in NED earth-fixed frame
+,,,VehicleLocalPosition_heading,heading,Float,radians,Numerical,"Euler yaw angle transforming the tangent plane relative to NED earth-fixed frame. [-PI, PI]"
+,,,VehicleLocalPosition_heading_var,heading_var,Float,radians,Numerical,Variance in heading
+,,,VehicleLocalPosition_unaided_heading,unaided_heading,Float,radians,Numerical,Same as heading but generated by integrating corrected gyro data only
+,,,VehicleLocalPosition_delta_heading,delta_heading,Float,radians,Numerical,Heading delta caused by latest heading reset
+,,,VehicleLocalPosition_heading_reset_counter,heading_reset_counter,Integer,,Categorical,Index of latest heading reset
+,,,VehicleLocalPosition_heading_good_for_control,heading_good_for_control,Boolean,,Categorical,Is heading readings good for controller
+,,,VehicleLocalPosition_tilt_var,tilt_var,Float,radians,Numerical,Variance in tilt
+,,,VehicleLocalPosition_xy_global,xy_global,Boolean,,Categorical,"Does position x, y have a valid global reference"
+,,,VehicleLocalPosition_z_global,z_global,Boolean,,Categorical,Does position z have a valid global reference
+,,,VehicleLocalPosition_ref_timestamp,ref_timestamp,Time,microseconds,Numerical,Time when reference position was set since system start
+,,,VehicleLocalPosition_ref_lat,ref_lat,Float,degrees,Numerical,Reference point latitude
+,,,VehicleLocalPosition_ref_lon,ref_lon,Float,degrees,Numerical,Reference point longitude
+,,,VehicleLocalPosition_ref_alt,ref_alt,Float,metres,Numerical,Reference altitude AMSL
+,,,VehicleLocalPosition_dist_bottom,dist_bottom,Float,metres,Numerical,Distance from bottom surface to ground
+,,,VehicleLocalPosition_dist_bottom_valid,dist_bottom_valid,Boolean,,Categorical,Is distance to bottom surface valid
+,,,VehicleLocalPosition_dist_bottom_sensor_bitfield,dist_bottom_sensor_bitfield,Integer,,Categorical,Bitfield indicating what type of sensor is used to estimate dist_bottom. [0: None; 1: Range sensor; 2: Flow sensor]
+,,,VehicleLocalPosition_eph,eph,Float,metres,Numerical,Standard deviation of horizontal position error
+,,,VehicleLocalPosition_epv,epv,Float,metres,Numerical,Standard deviation of vertical position error
+,,,VehicleLocalPosition_evh,evh,Float,m/s,Numerical,Standard deviation of horizontal velocity error
+,,,VehicleLocalPosition_evv,evv,Float,m/s,Numerical,Standard deviation of vertical velocity error
+,,,VehicleLocalPosition_dead_reckoning,dead_reckoning,Boolean,,Categorical,Is position estimated through dead-reckoning
+,,,VehicleLocalPosition_vxy_max,vxy_max,Float,m/s,Numerical,Maximum horizontal speed – set to 0 when limiting not required
+,,,VehicleLocalPosition_vz_max,vz_max,Float,m/s,Numerical,Maximum vertical speed – set to 0 when limiting not required
+,,,VehicleLocalPosition_hagl_min,hagl_min,Float,m,Numerical,Minimum height above ground level – set to 0 when limiting not required
+,,,VehicleLocalPosition_hagl_max,hagl_max,Float,m,Numerical,Maximum height above ground level – set to 0 when limiting not required
+VehicleOdometry,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,VehicleOdometry_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,VehicleOdometry_pose_frame,pose_frame,Integer,,Categorical,"Position and orientation frame of reference. [0: Unknown; 1: NED earth-fixed frame; 2: FRD world-fixed frame, arbitrary heading reference]"
+,,,VehicleOdometry_position_x,position_0,Float,metres,Numerical,Position in x. Frame of reference defined by local_frame.
+,,,VehicleOdometry_position_y,position_1,Float,metres,Numerical,Position in y. Frame of reference defined by local_frame.
+,,,VehicleOdometry_position_z,position_2,Float,metres,Numerical,Position in z. Frame of reference defined by local_frame.
+,,,VehicleOdometry_q_0,q_0,Float,,Numerical,Quaternion rotation from FRD body frame to reference frame on axis w
+,,,VehicleOdometry_q_1,q_1,Float,,Numerical,Quaternion rotation from FRD body frame to reference frame on axis x
+,,,VehicleOdometry_q_2,q_2,Float,,Numerical,Quaternion rotation from FRD body frame to reference frame on axis y
+,,,VehicleOdometry_q_3,q_3,Float,,Numerical,Quaternion rotation from FRD body frame to reference frame on axis z
+,,,VehicleOdometry_velocity_frame,velocity_frame,Integer,,Categorical,"Reference frame of velocity data. [0: Unknown; 1: NED earth-fixed frame; 2: FRD world-fixed frame, arbitrary heading reference]"
+,,,VehicleOdometry_velocity_x,velocity_0,Float,m/s,Numerical,Velocity in x. Frame of reference defined by velocity_frame variable.
+,,,VehicleOdometry_velocity_y,velocity_1,Float,m/s,Numerical,Velocity in y. Frame of reference defined by velocity_frame variable.
+,,,VehicleOdometry_velocity_z,velocity_2,Float,m/s,Numerical,Velocity in z. Frame of reference defined by velocity_frame variable.
+,,,VehicleOdometry_angular_velocity_x,angular_velocity_0,Float,rad/s,Numerical,Angular velocity in body-fixed frame in roll
+,,,VehicleOdometry_angular_velocity_y,angular_velocity_1,Float,rad/s,Numerical,Angular velocity in body-fixed frame in pitch
+,,,VehicleOdometry_angular_velocity_z,angular_velocity_2,Float,rad/s,Numerical,Angular velocity in body-fixed frame in yaw
+,,,VehicleOdometry_position_variance_x,position_variance_0,Float,metres,Numerical,Variance in position x
+,,,VehicleOdometry_position_variance_y,position_variance_1,Float,metres,Numerical,Variance in position y
+,,,VehicleOdometry_position_variance_z,position_variance_2,Float,metres,Numerical,Variance in position z
+,,,VehicleOdometry_orientation_variance_x,orientation_variance_0,Float,radians,Numerical,Variance in orientation roll
+,,,VehicleOdometry_orientation_variance_y,orientation_variance_1,Float,radians,Numerical,Variance in orientation pitch
+,,,VehicleOdometry_orientation_variance_z,orientation_variance_2,Float,radians,Numerical,Variance in orientation yaw
+,,,VehicleOdometry_velocity_variance_x,velocity_variance_0,Float,m/s,Numerical,Variance in velocity x
+,,,VehicleOdometry_velocity_variance_y,velocity_variance_1,Float,m/s,Numerical,Variance in velocity y
+,,,VehicleOdometry_velocity_variance_z,velocity_variance_2,Float,m/s,Numerical,Variance in velocity z
+,,,VehicleOdometry_reset_counter,reset_counter,Integer,,Categorical,Number of times stream was reset
+,,,VehicleOdometry_quality,quality,Integer,,Categorical,
+VehicleGlobalPosition,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,VehicleGlobalPosition_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,VehicleGlobalPosition_lat,lat,Float,degrees,Numerical,Latitude
+,,,VehicleGlobalPosition_lon,lon,Float,degrees,Numerical,Longitude
+,,,VehicleGlobalPosition_alt,alt,Float,metres,Numerical,Altitude AMSL
+,,,VehicleGlobalPosition_alt_ellipsoid,alt_ellipsoid,Float,metres,Numerical,Altitude above ellipsoid
+,,,VehicleGlobalPosition_delta_alt,delta_alt,Float,metres,Numerical,Reset delta for altitude
+,,,VehicleGlobalPosition_lat_lon_reset_counter,lat_lon_reset_counter,Integer,,Categorical,Counter for reset events on horizontal position coordinates
+,,,VehicleGlobalPosition_alt_reset_counter,alt_reset_counter,Integer,,Categorical,Counter for reset events on altitude
+,,,VehicleGlobalPosition_eph,eph,Float,metres,Numerical,Standard deviation of horizontal position error
+,,,VehicleGlobalPosition_epv,epv,Float,metres,Numerical,Standard deviation of vertical position error
+,,,VehicleGlobalPosition_terrain_alt,terrain_alt,Float,metres,Numerical,Terrain altitude WGS84
+,,,VehicleGlobalPosition_terrain_alt_valid,terrain_alt_valid,Boolean,,Categorical,Terrain altitude estimate is valid
+,,,VehicleGlobalPosition_dead_reckoning,dead_reckoning,Boolean,,Categorical,Is position estimated through dead-reckoning
+VehicleAttitude,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,VehicleAttitude_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,VehicleAttitude_q_0,q_0,Float,,Numerical,Quaternion rotation from FRD body frame to NED earth frame in axis w
+,,,VehicleAttitude_q_1,q_1,Float,,Numerical,Quaternion rotation from FRD body frame to NED earth frame in axis x
+,,,VehicleAttitude_q_2,q_2,Float,,Numerical,Quaternion rotation from FRD body frame to NED earth frame in axis y
+,,,VehicleAttitude_q_3,q_3,Float,,Numerical,Quaternion rotation from FRD body frame to NED earth frame in axis z
+,,,VehicleAttitude_delta_q_reset_0,delta_q_reset_0,Float,,Numerical,Amount by which quaternion changed during last rest in axis w
+,,,VehicleAttitude_delta_q_reset_1,delta_q_reset_1,Float,,Numerical,Amount by which quaternion changed during last rest in axis x
+,,,VehicleAttitude_delta_q_reset_2,delta_q_reset_2,Float,,Numerical,Amount by which quaternion changed during last rest in axis y
+,,,VehicleAttitude_delta_q_reset_3,delta_q_reset_3,Float,,Numerical,Amount by which quaternion changed during last rest in axis z
+,,,VehicleAttitude_quat_reset_counter,quat_reset_counter,Integer,,Categorical,Quaternion reset counter
+VehicleAcceleration,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,VehicleAcceleration_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,VehicleAcceleration_x,xyz_0,Float,m/s^2,Numerical,Bias corrected acceleration (including gravity) in the FRD body frame y-axis
+,,,VehicleAcceleration_y,xyz_1,Float,m/s^2,Numerical,Bias corrected acceleration (including gravity) in the FRD body frame x-axis
+,,,VehicleAcceleration_z,xyz_2,Float,m/s^2,Numerical,Bias corrected acceleration (including gravity) in the FRD body frame z-axis
+VehicleAngularVelocity,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,VehicleAngularVelocity_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
+,,,VehicleAngularVelocity_x,xyz_0,Float,rad/s,Numerical,Bias corrected angular velocity in the FRD body frame y-axis
+,,,VehicleAngularVelocity_y,xyz_1,Float,rad/s,Numerical,Bias corrected angular velocity in the FRD body frame x-axis
+,,,VehicleAngularVelocity_z,xyz_2,Float,rad/s,Numerical,Bias corrected angular velocity in the FRD body frame z-axis
+,,,VehicleAngularVelocity_x_derivative,xyz_derivative_0,Float,rad/s^2,Numerical,Angular acceleration about the FRD body frame x-axis
+,,,VehicleAngularVelocity_y_derivative,xyz_derivative_1,Float,rad/s^2,Numerical,Angular acceleration about the FRD body frame y-axis
+,,,VehicleAngularVelocity_z_derivative,xyz_derivative_2,Float,rad/s^2,Numerical,Angular acceleration about the FRD body frame z-axis
+ActuatorOutputs,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,ActuatorOutputs_noutputs,noutputs,Integer,,Categorical,Number of valid outputs
+,,,ActuatorOutputs_output_0,output_0,Float,RPM or PWM,Numerical,Output data 0
+,,,ActuatorOutputs_output_1,output_1,Float,RPM or PWM,Numerical,Output data 1
+,,,ActuatorOutputs_output_2,output_2,Float,RPM or PWM,Numerical,Output data 2
+,,,ActuatorOutputs_output_3,output_3,Float,RPM or PWM,Numerical,Output data 3
+,,,ActuatorOutputs_output_4,output_4,Float,RPM or PWM,Numerical,Output data 4
+,,,ActuatorOutputs_output_5,output_5,Float,RPM or PWM,Numerical,Output data 5
+,,,ActuatorOutputs_output_6,output_6,Float,RPM or PWM,Numerical,Output data 6
+,,,ActuatorOutputs_output_7,output_7,Float,RPM or PWM,Numerical,Output data 7
+,,,ActuatorOutputs_output_8,output_8,Float,RPM or PWM,Numerical,Output data 8
+,,,ActuatorOutputs_output_9,output_9,Float,RPM or PWM,Numerical,Output data 9
+,,,ActuatorOutputs_output_10,output_10,Float,RPM or PWM,Numerical,Output data 10
+,,,ActuatorOutputs_output_11,output_11,Float,RPM or PWM,Numerical,Output data 11
+,,,ActuatorOutputs_output_12,output_12,Float,RPM or PWM,Numerical,Output data 12
+,,,ActuatorOutputs_output_13,output_13,Float,RPM or PWM,Numerical,Output data 13
+,,,ActuatorOutputs_output_14,output_14,Float,RPM or PWM,Numerical,Output data 14
+,,,ActuatorOutputs_output_15,output_15,Float,RPM or PWM,Numerical,Output data 15
+BatteryStatus,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,BatteryStatus_connected,connected,Boolean,,Categorical,Is battery connected
+,,,BatteryStatus_voltage_v,voltage_v,Float,Volts,Numerical,Battery voltage
+,,,BatteryStatus_voltage_filtered_v,voltage_filtered_v,Float,Volts,Numerical,Battery voltage filtered
+,,,BatteryStatus_current_a,current_a,Float,Amperes,Numerical,Battery current
+,,,BatteryStatus_current_filtered_a,current_filtered_a,Float,Amperes,Numerical,Battery current filtered
+,,,BatteryStatus_current_average_a,current_average_a,Float,Amperes,Numerical,Battery current average for FW average in level flight
+,,,BatteryStatus_discharged_mah,discharged_mah,Float,mAh,Numerical,Dischanged amount
+,,,BatteryStatus_remaining,remaining,Float,,Numerical,"Remaining charge from [0,1]"
+,,,BatteryStatus_scale,scale,Float,,Numerical,Power scaling factor greater or equal to 1
+,,,BatteryStatus_time_remaining_s,time_remaining_s,Float,seconds,Numerical,Predicted time remaining till empty under previous averaged load
+,,,BatteryStatus_temperature,temperature,Float,degree Celsius,Numerical,Battery temperature
+,,,BatteryStatus_cell_count,cell_count,Integer,,Categorical,Number of cellcs
+,,,BatteryStatus_source,source,Integer,,Categorical,Battery source [0: Power module; 1: External; 2: ESCs]
+,,,BatteryStatus_priority,priority,Integer,,Categorical,Zero based priority is the connection on the power controller
+,,,BatteryStatus_capacity,capacity,Integer,,Categorical,Actual capacity of battery
+,,,BatteryStatus_cycle_count,cycle_count,Integer,,Categorical,Number of discharge cycles experienced by battery
+,,,BatteryStatus_average_time_to_empty,average_time_to_empty,Integer,minutes,Numerical,Predicted remaining battery capacity based on average rate of dischange in minutes
+,,,BatteryStatus_serial_number,serial_number,Integer,,Categorical,Serial number of battery pack
+,,,BatteryStatus_manufacture_date,manufacture_date,Integer,,Categorical,"Manufacture date, part of serial number of bettery pack. Formatted as: Day + Month×32 + (Year–1980)×512"
+,,,BatteryStatus_state_of_health,state_of_health,Integer,percentage,Numerical,"State of health, calculated FullChargeCapacity/DesignCapacity * 100%"
+,,,BatteryStatus_max_error,max_error,Integer,percentage,Numerical,Expected margin of error in percentage in the state of charge calculation
+,,,BatteryStatus_id,id,Integer,,Categorical,ID number of the battery
+,,,BatteryStatus_interface_error,interface_error,Integer,,Categorical,Interface error counter
+,,,BatteryStatus_voltage_cell_v_0,voltage_cell_v_0,Float,Volts,Numerical,Cell 0 Voltage
+,,,BatteryStatus_voltage_cell_v_1,voltage_cell_v_1,Float,Volts,Numerical,Cell 1 Voltage
+,,,BatteryStatus_voltage_cell_v_2,voltage_cell_v_2,Float,Volts,Numerical,Cell 2 Voltage
+,,,BatteryStatus_voltage_cell_v_3,voltage_cell_v_3,Float,Volts,Numerical,Cell 3 Voltage
+,,,BatteryStatus_voltage_cell_v_4,voltage_cell_v_4,Float,Volts,Numerical,Cell 4 Voltage
+,,,BatteryStatus_voltage_cell_v_5,voltage_cell_v_5,Float,Volts,Numerical,Cell 5 Voltage
+,,,BatteryStatus_voltage_cell_v_6,voltage_cell_v_6,Float,Volts,Numerical,Cell 6 Voltage
+,,,BatteryStatus_voltage_cell_v_7,voltage_cell_v_7,Float,Volts,Numerical,Cell 7 Voltage
+,,,BatteryStatus_voltage_cell_v_8,voltage_cell_v_8,Float,Volts,Numerical,Cell 8 Voltage
+,,,BatteryStatus_voltage_cell_v_9,voltage_cell_v_9,Float,Volts,Numerical,Cell 9 Voltage
+,,,BatteryStatus_voltage_cell_v_10,voltage_cell_v_10,Float,Volts,Numerical,Cell 10 Voltage
+,,,BatteryStatus_voltage_cell_v_11,voltage_cell_v_11,Float,Volts,Numerical,Cell 11 Voltage
+,,,BatteryStatus_voltage_cell_v_12,voltage_cell_v_12,Float,Volts,Numerical,Cell 12 Voltage
+,,,BatteryStatus_voltage_cell_v_13,voltage_cell_v_13,Float,Volts,Numerical,Cell 13 Voltage
+,,,BatteryStatus_max_cell_voltage_delta,max_cell_voltage_delta,Float,Volts,Numerical,Cell 14 Voltage
+,,,BatteryStatus_is_powering_off,is_powering_off,Boolean,,Categorical,Power off event imminent indicator
+,,,BatteryStatus_is_required,is_required,Boolean,,Categorical,Set if the battery is explicitly required before arming
+,,,BatteryStatus_faults,faults,Integer,,Categorical,Smart battery supply status/fault flags for health indication
+,,,BatteryStatus_custom_faults,custom_faults,Integer,,Categorical,"Bitmask indicating smart battery internal manufacturer faults, that are not user actionable"
+,,,BatteryStatus_warning,warning,Integer,,Categorical,Current battery warning
+,,,BatteryStatus_mode,mode,Integer,,Categorical,Battery mode
+,,,BatteryStatus_average_power,average_power,Float,W,Numerical,Average power of the current discharge
+,,,BatteryStatus_available_energy,available_energy,Float,Wh,Numerical,Predicted charge or energy remaining in the battery
+,,,BatteryStatus_full_charge_capacity_wh,full_charge_capacity_wh,Float,Wh,Numerical,Compensated battery capacity
+,,,BatteryStatus_remaining_capacity_wh,remaining_capacity_wh,Float,Wh,Numerical,Compensated battery capacity remaining
+,,,BatteryStatus_design_capacity,design_capacity,Float,Wh,Numerical,Design capacity of the battery
+,,,BatteryStatus_average_time_to_full,average_time_to_full,Integer,minutes,Numerical,"Predicted remaining time until battery reaches full charge, in minutes"
+,,,BatteryStatus_over_discharge_count,over_discharge_count,Integer,,Categorical,Number of battery overdischarge
+,,,BatteryStatus_nominal_voltage,nominal_voltage,Float,Volts,Numerical,Nominal voltage of battery pack
+PowerMonitor,,,,,,,,
+,,,timestamp,timestamp,Integer,microseconds,Numerical,Time since system start
+,,,PowerMonitor_voltage_v,voltage_v,Float,Volts,Numerical,Voltage
+,,,PowerMonitor_current_a,current_a,Float,Amperes,Numerical,Current
+,,,PowerMonitor_power_w,power_w,Float,Watts,Numerical,Power 
+,,,PowerMonitor_rconf,rconf,Integer,,Categorical,
+,,,PowerMonitor_rsv,rsv,Integer,,Categorical,
+,,,PowerMonitor_rbv,rbv,Integer,,Categorical,
+,,,PowerMonitor_rp,rp,Integer,,Categorical,
+,,,PowerMonitor_rc,rc,Integer,,Categorical,
+,,,PowerMonitor_rcal,rcal,Integer,,Categorical,
+,,,PowerMonitor_me,me,Integer,,Categorical,
+,,,PowerMonitor_al,al,Integer,,Categorical,
+VehicleStatus,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,VehicleStatus_armed_time,armed_time,Time,microseconds,Numerical,Arming timestamp
+,,,VehicleStatus_takeoff_time,takeoff_time,Time,microseconds,Numerical,Takeoff timestamp
+,,,VehicleStatus_arming_state,arming_state,Integer,,Categorical,Arming state. [1: Disarmed; 2: Armed]
+,,,VehicleStatus_latest_arming_reason,latest_arming_reason,Integer,,Categorical,Reason. [0: Transition to standby; 1: RC Stick; 2: RC Switch; 3: Command Internal; 4: Command External; 5: Mission Start; 6: Safety Button; 7: Auto Disarm Land; 8: Auto Disarm Preflight; 9: Kill Switch; 10: Lockdown; 11: Failure Detector; 12: Shutdown; 13: Unit Test]
+,,,VehicleStatus_latest_disarming_reason,latest_disarming_reason,Integer,,Categorical,Reason. [0: Transition to standby; 1: RC Stick; 2: RC Switch; 3: Command Internal; 4: Command External; 5: Mission Start; 6: Safety Button; 7: Auto Disarm Land; 8: Auto Disarm Preflight; 9: Kill Switch; 10: Lockdown; 11: Failure Detector; 12: Shutdown; 13: Unit Test]
+,,,VehicleStatus_nav_state_timestamp,nav_state_timestamp,Time,microseconds,Numerical,Time when current nav_state activated
+,,,VehicleStatus_nav_state_user_interaction,nav_state_user_interaction,Integer,,Categorical,Mode that the user selected
+,,,VehicleStatus_nav_state,nav_state,Integer,,Categorical,Currently active mode. [0: Manual; 1: Altitude control mode; 2: Position control mode; 3: Auto mission mode; 4: Auto loiter mode; 5: Auto return to land mode; 6: Position slow; 7: Free5; 8: Free4; 9: Free3; 10: Acro; 11: Free2; 12: Descend; 13: Termination; 14: Offboard; 15: Stabilised mode; 16: Free1; 17: Takeoff; 18: Land; 19: Auto follow target; 20: Precision land with landing target; 21: Orbit in a circle; 22: Auto VTOL Takeoff; 23-30: External; 31: Max]
+,,,VehicleStatus_executor_in_charge,executor_in_charge,Integer,,Categorical,Current mode executor in change [0: Autopilot]
+,,,VehicleStatus_valid_nav_states_mask,valid_nav_states_mask,Integer,,Categorical,Bitmask for all valid nav_state values
+,,,VehicleStatus_can_set_nav_states_mask,can_set_nav_states_mask,Integer,,Categorical,Bitmask for all modes that a user can select
+,,,VehicleStatus_failure_detector_status,failure_detector_status,Integer,,Categorical,Bitmask of detected failures. [None: 0; Roll:1; Pitch: 2; Alt: 4; Ext: 8; Arm_ESC: 16; Battery: 32; 64: Imbalanced propeller; 128: Motor]
+,,,VehicleStatus_hil_state,hil_state,Integer,,Categorical,Hardware in loop state. [0: off; 1: On]
+,,,VehicleStatus_vehicle_type,vehicle_type,Integer,,Categorical,Vehicle type indicator. [0: Unknown; 1: Rotary wing; 2: Fixed wing; 3: Rover; 4: Airship]
+,,,VehicleStatus_failsafe,failsafe,Boolean,,Categorical,Is system in failsafe state
+,,,VehicleStatus_failsafe_and_user_took_over,failsafe_and_user_took_over,Boolean,,Categorical,If in failsafe state but user took over control
+,,,VehicleStatus_failsafe_defer_state,failsafe_defer_state,Integer,,Categorical,Failsafe defer state. [0: Disabled; 1: Enabled; 2: Would failsafe]
+,,,VehicleStatus_gcs_connection_lost,gcs_connection_lost,Boolean,,Categorical,Datalink to GCS lost
+,,,VehicleStatus_gcs_connection_lost_counter,gcs_connection_lost_counter,Integer,,Categorical,Counts unique GCS connection lost event
+,,,VehicleStatus_high_latency_data_link_lost,high_latency_data_link_lost,Boolean,,Categorical,Set true if high latency data link
+,,,VehicleStatus_is_vtol,is_vtol,Boolean,,Categorical,Is system VTOL capable
+,,,VehicleStatus_is_vtol_tailsitter,is_vtol_tailsitter,Boolean,,Categorical,Can system perform a 90-degree pitch down rotation
+,,,VehicleStatus_in_transition_mode,in_transition_mode,Boolean,,Categorical,Is VTOL doing transition
+,,,VehicleStatus_in_transition_to_fw,in_transition_to_fw,Boolean,,Categorical,Is VTOL doing a transition from MC to FW
+,,,VehicleStatus_system_type,system_type,Integer,,Categorical,"System type, contains MAV_TYPE"
+,,,VehicleStatus_system_id,system_id,Integer,,Categorical,"System ID, contains MAVLink’s system ID field"
+,,,VehicleStatus_component_id,component_id,Integer,,Categorical,"Subsystem/component ID, contains MAVLink’s component ID field"
+,,,VehicleStatus_safety_button_available,safety_button_available,Boolean,,Categorical,Is safety button available
+,,,VehicleStatus_safety_off,safety_off,Boolean,,Categorical,Is safety off
+,,,VehicleStatus_power_input_valid,power_input_valid,Boolean,,Categorical,Power input is valid
+,,,VehicleStatus_usb_connected,usb_connected,Boolean,,Categorical,Set to true once telemetry is received through USB link
+,,,VehicleStatus_open_drone_id_system_present,open_drone_id_system_present,Boolean,,Categorical,Is open drone ID system present
+,,,VehicleStatus_open_drone_id_system_healthy,open_drone_id_system_healthy,Boolean,,Categorical,Is open drone ID system healthy
+,,,VehicleStatus_avoidance_system_required,avoidance_system_required,Boolean,,Categorical,Is avoidance system enabled
+,,,VehicleStatus_avoidance_system_valid,avoidance_system_valid,Boolean,,Categorical,Is avoidance system working
+,,,VehicleStatus_rc_calibration_in_progress,rc_calibration_in_progress,Boolean,,Categorical,Is RC calibration in progres
+,,,VehicleStatus_calibration_enabled,calibration_enabled,Boolean,,Categorical,Is calibration enabled
+,,,VehicleStatus_pre_flight_checks_pass,pre_flight_checks_pass,Boolean,,Categorical,Did all preflight checks to arm pass
+Rpm,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,Rpm_indicated_frequency_rpm,indicated_frequency_rpm,Float,RPM,Numerical,Indicated rotor frequency
+,,,Rpm_estimated_accuracy_rpm,estimated_accuracy_rpm,Float,RPM,Numerical,Estimated accuracy
+SensorCombined,,,,,,,,
+,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
+,,,SensorCombined_gyro_rad_0,gyro_rad_0,Float,rad/s,Numerical,Average angular rate measured in the FRD body frame X-axis over the last gyro sampling period
+,,,SensorCombined_gyro_rad_1,gyro_rad_1,Float,rad/s,Numerical,Average angular rate measured in the FRD body frame Y-axis over the last gyro sampling period
+,,,SensorCombined_gyro_rad_2,gyro_rad_2,Float,rad/s,Numerical,Average angular rate measured in the FRD body frame Z-axis over the last gyro sampling period
+,,,SensorCombined_gyro_integral_dt,gyro_integral_dt,Integer,microseconds,Numerical,Gyro measurement sampling period
+,,,SensorCombined_accelerometer_timestamp_relative,accelerometer_timestamp_relative,Time,microseconds,Numerical,timestamp + accelerometer_timestamp_relative = Accelerometer timestamp
+,,,SensorCombined_accelerometer_m_s2_0,accelerometer_m_s2_0,Float,m/s^2,Numerical,Average value acceleration measured in the FRD body frame X-axis over the last accelerometer sampling period
+,,,SensorCombined_accelerometer_m_s2_1,accelerometer_m_s2_1,Float,m/s^2,Numerical,Average value acceleration measured in the FRD body frame Y-axis over the last accelerometer sampling period
+,,,SensorCombined_accelerometer_m_s2_2,accelerometer_m_s2_2,Float,m/s^2,Numerical,Average value acceleration measured in the FRD body frame Z-axis over the last accelerometer sampling period
+,,,SensorCombined_accelerometer_integral_dt,accelerometer_integral_dt,Integer,microseconds,Numerical,Accelerometer measurement sampling period
+,,,SensorCombined_accelerometer_clipping,accelerometer_clipping,Integer,,Categorical,Bitfield indicating if there was any accelerometer clipping (per axis) during the integration time frame
+,,,SensorCombined_gyro_clipping,gyro_clipping,Integer,,Categorical,Bitfield indicating if there was any gyro clipping (per axis) during the integration time frame
+,,,SensorCombined_accel_calibration_count,accel_calibration_count,Integer,,Categorical,Calibration changed counter. Monotonically increases whenever accelermeter calibration changes.
+,,,SensorCombined_gyro_calibration_count,gyro_calibration_count,Integer,,Categorical,Calibration changed counter. Monotonically increases whenever rate gyro calibration changes.

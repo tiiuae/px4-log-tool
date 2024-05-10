@@ -1,12 +1,13 @@
 whitelist_messages:
+  - "sensor_accel"
+  - "sensor_gyro"
   - "battery_status"
-  - "vehicle_global_position"
-  - "vehicle_local_position"
-  - "vehicle_attitude"
-  - "vehicle_status"
-  - "actuator_outputs"
-  - "sensor_baro"
 blacklist_headers:
   - "timestamp_sample"
   - "device_id"
   - "error_count"
+resample_params:
+  target_frequency_hz: 10
+  num_method: 'mean'
+  cat_method: 'ffill'
+  interpolate_numerical: False

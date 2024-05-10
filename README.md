@@ -17,41 +17,44 @@ description: Includes real flights and SITL flight. Normal and anomalous.
 
 📂 Data  
 ├─ 📂 hardware  
-│  ├─ 📂 autonomous  
-│  │  ├─ 📂 different_paths  
-│  │  │  ├─ ❓ [README.md](./hardware/autonomous/different_paths/README.md)  
-│  │  │  ├─ 💾 `different_paths_0.ulog`  
-│  │  │  └─ 💾 `<...>.ulog`    
-│  │  │    
-│  │  ├─ 📂 different_terrains  
-│  │  │  ├─ ❓ [README.md](./hardware/autonomous/different_terrains/README.md)   
-│  │  │  ├─ 💾 `different_terrains_0.ulog`  
-│  │  │  └─ 💾 `<...>.ulog`    
-│  │  │    
-│  │  ├─ 📂 linear_paths  
-│  │  │  ├─ ❓ [README.md](./hardware/autonomous/linear_paths/README.md)   
-│  │  │  ├─ 💾 `linear_paths_0.ulog`  
-│  │  │  └─ 💾 `<...>.ulog`    
+│  ├─ 📂 normal  
+│  │  ├─ 📂 autonomous                                                                         
+│  │  │  ├─ 📂 different_paths  
+│  │  │  │  ├─ ❓ README.md  
+│  │  │  │  ├─ 💾 `different_paths_0.ulog`  
+│  │  │  │  └─ 💾 `<...>.ulog`    
+│  │  │  │    
+│  │  │  ├─ 📂 different_terrains  
+│  │  │  │  ├─ ❓ README.md   
+│  │  │  │  ├─ 💾 `different_terrains_0.ulog`  
+│  │  │  │  └─ 💾 `<...>.ulog`    
+│  │  │  │    
+│  │  │  └─ 📂 linear_paths  
+│  │  │     ├─ ❓ README.md   
+│  │  │     ├─ 💾 `linear_paths_0.ulog`  
+│  │  │     └─ 💾 `<...>.ulog`    
 │  │  │  
-│  │  └─ 📂 takeoff_land  
-│  │     ├─ ❓ [README.md](./hardware/autonomous/takeoff_land/README.md)  
-│  │     ├─ 💾 `takeoff_land_0.ulog`  
-│  │     └─ 💾 `<...>.ulog`    
-│  │  
-│  ├─ 📂 gimbal_camera_video  
-│  │  ├─ 📂 natsbags  
-│  │  │  ├─ 💾 `different_paths_0.gz`  
-│  │  │  └─ 💾 `<...>.gz`    
-│  │  │    
-│  │  └─ 📂 videos  
-│  │     ├─ 💾 `different_paths_0.mp4`  
-│  │     └─ 💾 `<...>.mp4`    
-│  │  
-│  └─ 📂 manual  
-│     └─ 📂 fast_movements  
-│        ├─ ❓ [README.md](./hardware/manual/fast_movements/README.md)   
-│        ├─ 💾 `fast_movements_0.ulog`  
-│        └─ 💾 `<...>.ulog`    
+│  │  ├─ 📂 gimbal_camera_video  
+│  │  │  ├─ 📂 natsbags  
+│  │  │  │  ├─ 💾 `different_paths_0.gz`  
+│  │  │  │  └─ 💾 `<...>.gz`    
+│  │  │  │    
+│  │  │  └─ 📂 videos  
+│  │  │     ├─ 💾 `different_paths_0.mp4`  
+│  │  │     └─ 💾 `<...>.mp4`    
+│  │  │  
+│  │  └─ 📂 manual  
+│  │     ├─ 📂 fast_movements  
+│  │     │    ├─ ❓ README.md   
+│  │     │    ├─ 💾 `fast_movements_0.ulog`  
+│  │     │    └─ 💾 `<...>.ulog`    
+│  │     │  
+│  │     └─ 📂 takeoff_land  
+│  │        ├─ ❓ README.md  
+│  │        ├─ 💾 `takeoff_land_0.ulog`  
+│  │        └─ 💾 `<...>.ulog`  
+│  │
+│  └─ 📂 non_normal  
 │  
 ├─ 📂 simulation  
 │  ├─ 📂 faulty  
@@ -72,22 +75,23 @@ Add uorb/ros2 topics of interest into the `whitelist_messages` list.
 Add headers that are redundant or not required in the `blacklist_headers` list.
 ```yaml
 whitelist_messages:
-  - "battery_status"
-  - "vehicle_global_position"
-  - "vehicle_local_position"
-  - "vehicle_attitude"
-  - "vehicle_status"
-  - "actuator_outputs"
-  - "sensor_baro"
+    - sensor_combined
+    - vehicle_attitude
+    - ... (other message names)
 blacklist_headers:
-  - "timestamp_sample"
-  - "device_id"
-  - "error_count"
+    - timestamp
+    - ... (other field names)
+resample_params:
+    target_frequency_hz: 10
+    num_method: "mean"
+    cat_method: "ffill"
+    interpolate_numerical: False
+    interpolate_method: "linear"
 ```
 
 ## `.ulog` --> `.csv` -- `ulog_converter.py`
 
-Converts ULog files to CSV, with options for filtering, merging, and creating a unified CSV.
+This script provides a streamlined way to process PX4 ULog files. It offers flexibility in converting individual files or merging multiple files, filtering specific messages, and resampling data.
 
 ### Usage
 
@@ -106,14 +110,13 @@ python <script_name> <ulog_dir> <filter.yaml> -o <output_dir> -m # Merges CSV fi
 
 ### Arguments
 
-* **ulog_dir (str):**  Path to the directory containing ULog files.
-* **filter.yaml (str):** Path to a YAML filter file specifying:
-    * **whitelist_messages (list):**  List of message names to include during conversion 
-    * **blacklist_headers (list):** List of headers (field names) to exclude from the output CSV files.
-* **-o, --output_dir (str):**  Output directory for converted CSV files.  Mirrors the input directory structure. Defaults to 'output_dir'.
-* **-m, --merge:** If specified, merges CSV files within each subdirectory into a 'merged.csv' file.
-* **-c, --clean:**  If specified, cleans up intermediate files after merging, leaving only 'unified.csv'.
-* **-v, --verbose:**  Enables verbose logging during the process.
+* -ulog_dir (str): Path to the directory containing ULog files.
+* -filter (str): Path to a YAML filter file specifying message whitelist and header blacklist.
+* -o, --output_dir (str): Output directory for converted CSV files (default: 'output_dir').
+* -m, --merge: Merge CSV files within each subdirectory into 'merged.csv' files.
+* -r, --resample: Resample 'merged.csv' files based on parameters in 'filter.yaml'.
+* -c, --clean: Clean up intermediate files, leaving only 'unified.csv'.
+* -v, --verbose: Enable verbose logging.
 
 ### Workflow
 

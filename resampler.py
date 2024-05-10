@@ -66,7 +66,7 @@ def resample_data(df, target_frequency_hz, num_method='mean', cat_method='ffill'
     pandas_freq = f'{round(milliseconds_per_sample)}L'
 
     # Determine column types
-    numeric_cols = df.select_dtypes(include=[np.number]).columns
+    numeric_cols = df.select_dtypes(include=[np.number]).columns # List[str] = [column names]
     categorical_cols = df.select_dtypes(exclude=[np.number]).columns
 
     # Resample numerical columns
