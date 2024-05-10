@@ -50,7 +50,21 @@ from pyulog import ULog
 from multiprocessing import Process
 from copy import deepcopy
 from typing import List, Dict, Any
+import matplotlib.pyplot as plt
 
+def plot_battery_status(df, timestamp_column, battery_status_column):
+    df = df.copy()
+    df[timestamp_column] = pd.to_datetime(df[timestamp_column], unit='us')
+    df.set_index(timestamp_column, inplace=True)
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    plt.plot(df.index, df[battery_status_column], marker='.', linestyle='-')
+    plt.title('Battery Status Over Time')
+    plt.xlabel('Time (seconds from start)')
+    plt.ylabel('Battery Status Remaining (%)')
+    plt.grid(True)
+    plt.show()
 
 def convert_ulog2csv(
     directory_address: str,
@@ -233,6 +247,8 @@ def resample_data(
 
     # Reset index to return timestamp as a column
     resampled_df.reset_index(inplace=True)
+    resampled_df['timestamp'] = pd.to_datetime(resampled_df['timestamp'])
+    resampled_df['timestamp'] = resampled_df['timestamp'].astype('int64') // 10**3
     # resampled_df = resampled_df['timestamp'].astype('int64') // 1000
     return resampled_df
 

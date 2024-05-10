@@ -1,6 +1,5 @@
 whitelist_messages:
-  - "sensor_accel"
-  - "sensor_gyro"
+  - "sensor_combined"
   - "battery_status"
 blacklist_headers:
   - "timestamp_sample"
@@ -11,3 +10,4 @@ resample_params:
   num_method: 'mean'
   cat_method: 'ffill'
   interpolate_numerical: False
+  interpolate_method: 'linear'
