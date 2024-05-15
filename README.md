@@ -11,6 +11,7 @@ description: Includes real flights and SITL flight. Normal and anomalous.
     - [Usage](#usage)
     - [Arguments](#arguments)
     - [Workflow](#workflow)
+    - [Resampling Functionality](#resampling-functionality)
 <!--toc:end-->
 
 # Folder Structure
@@ -73,6 +74,14 @@ Contains two lists for `whitelist_messages` and `blacklist headers`.
 Add uorb/ros2 topics of interest into the `whitelist_messages` list.
 
 Add headers that are redundant or not required in the `blacklist_headers` list.
+
+`resample_params` contains parameters for resampling the data after it is merged. More on this is explained in [Resampling Functionality](README#resampling-functionality). Provide the target sampling frequency in Hertz at `target_frequency_hz`.
+
+For the other parameters, refer to the following documentation links of the `pandas` library:
+* [`pandas.DataFrame.resample`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html)
+* [`pandas.DataFrame.agg`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.agg.html)
+* [`pandas.DataFrame.interpolate`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html)
+
 ```yaml
 whitelist_messages:
     - sensor_combined
@@ -125,7 +134,18 @@ python <script_name> <ulog_dir> <filter.yaml> -o <output_dir> -m # Merges CSV fi
 3. **File Unification (Optional):** Combines all 'merged.csv' files into a single 'unified.csv' file.
 4. **Cleanup (Optional):** If the `-c` flag is set, removes intermediate files and directories, leaving only 'unified.csv'.
 
+### Resampling Functionality
 
+As seen in [Arguments](README#Arguments) it is possible to resample the output 'unified.csv' to a predefined target frequency.
 
+This is done by providing the `-r` flag:
 
+```bash
+python <script_name> <ulog_dir> <filter.yaml> -o <output_dir> -m -r # Resamples data according to provided filter params
+```
 
+Note that you NEED to have a 'filter.yaml' file with the provided params or else it will default to the parameters defined above.
+
+An example of resampling is shown below for the 'SensorCombined' topic for the gyroscope readings, with default resampling params.
+
+![Unsampled](./assets/unsampled.png) ![Sampled at 10Hz](./assets/sampled_10hz.png)
