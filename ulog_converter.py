@@ -498,7 +498,7 @@ def main():
                 "target_frequency_hz": 10,
                 "num_method": "mean",
                 "cat_method": "ffill",
-                "interpolate_numerical": False,
+                "interpolate_numerical": True,
                 "interpolate_method": "linear",
             }
 
