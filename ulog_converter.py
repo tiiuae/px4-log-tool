@@ -220,12 +220,11 @@ def resample_data(
     df_resampled = df.resample(pandas_freq).last()  # Use 'last' to initially preserve data structure
 
     # Apply specific methods for numerical data
-    if num_columns:
-        df_num = df_resampled[num_columns]
-        if interpolate_numerical:
-            df_num = df_num.interpolate(method=interpolate_method)
-        else:
-            df_num = df_num.apply(lambda x: x.resample(pandas_freq).agg(num_method))
+    df_num = df_resampled[num_columns]
+    if interpolate_numerical:
+        df_num = df_num.interpolate(method=interpolate_method)
+    else:
+        df_num = df_num.apply(lambda x: x.resample(pandas_freq).agg(num_method))
 
     # Apply specific methods for categorical data
     df_cat = df_resampled[cat_columns]
