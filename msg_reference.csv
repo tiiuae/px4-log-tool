@@ -8,7 +8,9 @@ SensorAccel,,,,,,,,
 ,,,SensorAccel_z,z,Float,m/s^2,Numerical,Acceleration in z-axis
 ,,,SensorAccel_temperature,temperature,Integer,degree Celsius,Numerical,Sensor temperature
 ,,,SensorAccel_error_count,error_count,Integer,,Categorical,Errors detected during device operation
-,,,SensorAccel_clip_counter,clip_counter,Integer,,Categorical,Clip count per axis in the sample period
+,,,SensorAccel_clip_counter_0,clip_counter_0,Integer,,Categorical,Clip count in x-axis in the sample period
+,,,SensorAccel_clip_counter_1,clip_counter_1,Integer,,Categorical,Clip count in y-axis in the sample period
+,,,SensorAccel_clip_counter_2,clip_counter_2,Integer,,Categorical,Clip count in z-axis in the sample period
 ,,,SensorAccel_samples,samples,Integer,,Categorical,Number of raw samples that went into this message
 SensorGyro,,,,,,,,
 ,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
@@ -19,7 +21,9 @@ SensorGyro,,,,,,,,
 ,,,SensorGyro_z,z,Float,rad/s,Numerical,Angular velocity in z-axis
 ,,,SensorGyro_temperature,temperature,Integer,degree Celsius,Numerical,Sensor temperature
 ,,,SensorGyro_error_count,error_count,Integer,,Categorical,Errors detected during device operation
-,,,SensorGyro_clip_counter,clip_counter,Integer,,Categorical,Clip count per axis in the sample period
+,,,SensorGyro_clip_counter_0,clip_counter_0,Integer,,Categorical,Clip count in x-axis in the sample period
+,,,SensorGyro_clip_counter_1,clip_counter_1,Integer,,Categorical,Clip count in y-axis in the sample period
+,,,SensorGyro_clip_counter_2,clip_counter_2,Integer,,Categorical,Clip count in z-axis in the sample period
 ,,,SensorGyro_samples,samples,Integer,,Categorical,Number of raw samples that went into this message
 SensorMag,,,,,,,,
 ,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
@@ -41,10 +45,10 @@ SensorGps,,,,,,,Categorical,
 ,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
 ,,,SensorGps_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
 ,,,SensorGps_device_id,device_id,Integer,,Categorical,Unique device ID for the sensor that does not change between power cycles
-,,,SensorGps_latitude_deg,latitude_deg,Float,degrees,Numerical,"Latitude, allows centimeter level RTK precision, in WGS84 coordinates"
-,,,SensorGps_longitude_deg,longitude_deg,Float,degrees,Numerical,"Longitude, allows centimeter level RTK precision, in WGS84 coordinates"
-,,,SensorGps_altitude_msl_m,altitude_msl_m,Float,metres,Numerical,Altitude above mean sea level
-,,,SensorGps_altitude_ellipsoid_m,altitude_ellipsoid_m,Float,metres,Numerical,Altitude above ellipsoid
+,,,SensorGps_lat,lat,Float,degrees,Numerical,"Latitude, allows centimeter level RTK precision, in WGS84 coordinates"
+,,,SensorGps_lon,lon,Float,degrees,Numerical,"Longitude, allows centimeter level RTK precision, in WGS84 coordinates"
+,,,SensorGps_alt,alt,Float,metres,Numerical,Altitude above mean sea level
+,,,SensorGps_alt_ellipsoid,alt_ellipsoid,Float,metres,Numerical,Altitude above ellipsoid
 ,,,SensorGps_s_variance_m_s,s_variance_m_s,Float,m/s^2,Numerical,GPS speed accuracy estimate
 ,,,SensorGps_c_variance_rad,c_variance_rad,Float,radians,Numerical,GPS course accuracy estimate
 ,,,SensorGps_fix_type,fix_type,Integer,,Categorical,"Some applications will not use the value of this field unless it is at least two, so always correctly fill in the fix. [0-1: no fix; 2: 2D fix; 3: 3D fix; 4: RTCM code differential; 5: Real-Time Kinematic - float; 6: Real-Time Kinematic - fixed; 8: Extrapolated]"

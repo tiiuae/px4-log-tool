@@ -1,6 +1,6 @@
 whitelist_messages:
-  - "sensor_combined"
-  - "battery_status"
+  - "vehicle_global_position"
+  - "sensor_gps"
 blacklist_headers:
   - "timestamp_sample"
   - "device_id"
@@ -8,6 +8,6 @@ blacklist_headers:
 resample_params:
   target_frequency_hz: 10
   num_method: 'mean'
-  cat_method: 'ffill'
+  cat_method: 'bfill'
   interpolate_numerical: True
   interpolate_method: 'linear'

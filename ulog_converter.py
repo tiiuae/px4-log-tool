@@ -51,16 +51,17 @@ from multiprocessing import Process
 from copy import deepcopy
 from typing import List, Dict, Any
 
+
 def convert_ulog2csv(
-    directory_address: str,
-    ulog_file_name: str,
-    messages: List[str] = None,
-    output: str = ".",
-    blacklist: List[str] = None,
-    delimiter: str = ",",
-    time_s: float = None,
-    time_e: float = None,
-    disable_str_exceptions: bool = False,
+        directory_address: str,
+        ulog_file_name: str,
+        messages: List[str] = None,
+        output: str = ".",
+        blacklist: List[str] = None,
+        delimiter: str = ",",
+        time_s: float = None,
+        time_e: float = None,
+        disable_str_exceptions: bool = False,
 ) -> None:
     """
     Converts a PX4 ULog file to CSV files.
@@ -160,14 +161,14 @@ def convert_ulog2csv(
 
 
 def resample_data(
-    df: pd.DataFrame,
-    target_frequency_hz: float,
-    num_method: str = "mean",
-    cat_method: str = "ffill",
-    interpolate_numerical: bool = False,
-    interpolate_method: str = "linear",
-    num_labels: List[str] = None,
-    cat_labels: List[str] = None,
+        df: pd.DataFrame,
+        target_frequency_hz: float,
+        num_method: str = "mean",
+        cat_method: str = "ffill",
+        interpolate_numerical: bool = False,
+        interpolate_method: str = "linear",
+        num_labels: List[str] = None,
+        cat_labels: List[str] = None,
 ) -> pd.DataFrame:
     """
     Resamples a DataFrame to a specified frequency, handling numerical and categorical data.
@@ -204,13 +205,12 @@ def resample_data(
     pandas_freq = f"{round(milliseconds_per_sample)}L"
 
     # Determine column types
-    numeric_cols = df.select_dtypes(
-        include=[np.number]
-    ).columns  # List[str] = [column names]
-    categorical_cols = df.select_dtypes(exclude=[np.number]).columns
+    if num_labels is None or cat_labels is None:
+        num_labels = df.select_dtypes(include=[np.number]).columns
+        cat_labels = df.select_dtypes(exclude=[np.number]).columns
 
     # Resample numerical columns
-    resampled_num = df[numeric_cols].resample(pandas_freq).agg(num_method)
+    resampled_num = df[num_labels].resample(pandas_freq).agg(num_method)
 
     # Optionally interpolate numerical data
     if interpolate_numerical:
@@ -220,12 +220,12 @@ def resample_data(
     if cat_method == "mode":
         # 'mode' is not directly supported in resample.agg, so use a custom function
         resampled_cat = (
-            df[categorical_cols]
+            df[cat_labels]
             .resample(pandas_freq)
             .agg(lambda x: x.mode()[0] if not x.empty else np.nan)
         )
     else:
-        resampled_cat = df[categorical_cols].resample(pandas_freq).agg(cat_method)
+        resampled_cat = df[cat_labels].resample(pandas_freq).agg(cat_method)
 
     # Combine results
     resampled_df = pd.concat([resampled_num, resampled_cat], axis=1)
@@ -233,17 +233,17 @@ def resample_data(
     # Reset index to return timestamp as a column
     resampled_df.reset_index(inplace=True)
     resampled_df['timestamp'] = pd.to_datetime(resampled_df['timestamp'])
-    resampled_df['timestamp'] = resampled_df['timestamp'].astype('int64') // 10**3
+    resampled_df['timestamp'] = resampled_df['timestamp'].astype('int64') // 10 ** 3
     # resampled_df = resampled_df['timestamp'].astype('int64') // 1000
     return resampled_df
 
 
 def merge_csv(
-    root: str,
-    files: List[str],
-    msg_reference: pd.DataFrame = None,
-    resample: bool = False,
-    sampling_params: Dict[str, Any] = None,
+        root: str,
+        files: List[str],
+        msg_reference: pd.DataFrame = None,
+        resample: bool = False,
+        sampling_params: Dict[str, Any] = None,
 ) -> None:
     """
     Merges multiple CSV files in a directory, handling column renaming and resampling.
@@ -306,7 +306,7 @@ def merge_csv(
             if msg[-1].isdigit():
                 msg = msg[:-1]
             label_dc = reference[reference["Alias"] == f"{msg}_{param}"]
-            dc = label_dc["Dataclass"].iloc(0)
+            dc = label_dc["Dataclass"].iloc[0]
             if dc == "Numerical":
                 num_labels.append(label)
             else:
@@ -479,7 +479,8 @@ def main():
             msg_reference = pd.read_csv(os.path.join(os.getcwd(), "msg_reference.csv"))
         except FileNotFoundError:
             print("Error: msg_reference.csv not found.")
-            print("Case 1 -- Ensure that the msg_reference.csv file is present in the directory this script is being run from.")
+            print(
+                "Case 1 -- Ensure that the msg_reference.csv file is present in the directory this script is being run from.")
             print("Case 2 -- Please restore this repository or download this file from the source.")
             print("Case 3 -- If resampling is not desired, please remove the resample flag from the command line.")
             return
