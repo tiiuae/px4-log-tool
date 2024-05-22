@@ -168,8 +168,8 @@ def resample_data(
         cat_method: str = "last",
         interpolate_numerical: bool = False,
         interpolate_method: str = "linear",
-        num_labels: List[str] = None,
-        cat_labels: List[str] = None,
+        num_columns: List[str] = None,
+        cat_columns: List[str] = None,
 ) -> pd.DataFrame:
     """
     Resamples a DataFrame to a specified frequency, handling numerical and categorical data.
@@ -189,12 +189,24 @@ def resample_data(
         interpolate_numerical: Whether to interpolate numerical data after resampling. Defaults to False.
         interpolate_method: The interpolation method to use if interpolation is enabled (e.g., 'linear', 'nearest', 'spline').
             Defaults to 'linear'.
-        num_labels: (Optional) List of numerical column labels to resample. If None, all numerical columns are resampled.
-        cat_labels: (Optional) List of categorical column labels to resample. If None, all categorical columns are resampled.
+        num_columns: (Optional) List of numerical column labels to resample. If None, all numerical columns are resampled.
+        cat_columns: (Optional) List of categorical column labels to resample. If None, all categorical columns are resampled.
 
     Returns:
         The resampled DataFrame with the 'timestamp' column reset as a regular column.
     """
+    # Validate that num_columns and cat_columns are provided
+    if num_columns is None or cat_columns is None:
+        raise ValueError("Both num_columns and cat_columns must be provided and cannot be None.")
+
+    # Find any columns that are neither in num_columns nor in cat_columns, including 'timestamp' as a recognized column
+    all_labels = set(num_columns + cat_columns + ['timestamp'])
+    unidentified_cols = [col for col in df.columns if col not in all_labels]
+
+    # If there are unidentified columns, raise an error and print them
+    if unidentified_cols:
+        raise ValueError(f"There are columns in the dataframe which are flagged as neither numerical nor categorical: {unidentified_cols}")
+
     # Convert the target frequency from Hz to a pandas frequency string
     milliseconds_per_sample = 1000 / target_frequency_hz
     pandas_freq = f"{round(milliseconds_per_sample)}L"
@@ -207,22 +219,16 @@ def resample_data(
     # Resample the entire DataFrame using a simple aggregation initially
     df_resampled = df.resample(pandas_freq).last()  # Use 'last' to initially preserve data structure
 
-    # Identify numerical and categorical columns if not provided
-    if num_labels is None:
-        num_labels = df.select_dtypes(include=[np.number]).columns.tolist()
-    if cat_labels is None:
-        cat_labels = df.select_dtypes(exclude=[np.number]).columns.tolist()
-
     # Apply specific methods for numerical data
-    if num_labels:
-        df_num = df_resampled[num_labels]
+    if num_columns:
+        df_num = df_resampled[num_columns]
         if interpolate_numerical:
             df_num = df_num.interpolate(method=interpolate_method)
         else:
             df_num = df_num.apply(lambda x: x.resample(pandas_freq).agg(num_method))
 
     # Apply specific methods for categorical data
-    df_cat = df_resampled[cat_labels]
+    df_cat = df_resampled[cat_columns]
     df_cat = df_cat.fillna(method=cat_method)
 
     # Concatenate numerical and categorical data back together
