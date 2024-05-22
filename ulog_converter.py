@@ -166,7 +166,7 @@ def resample_data(
         target_frequency_hz: float,
         num_method: str = "mean",
         cat_method: str = "last",
-        interpolate_numerical: bool = False,
+        interpolate_numerical: bool = True,
         interpolate_method: str = "linear",
         num_columns: List[str] = None,
         cat_columns: List[str] = None,
@@ -216,6 +216,9 @@ def resample_data(
     if df.index.name != "timestamp":
         df = df.set_index("timestamp")
 
+    # TODO: check verbose true
+    print_column_frequencies(df)
+
     # Resample the entire DataFrame using a simple aggregation initially
     df_resampled = df.resample(pandas_freq).last()  # Use 'last' to initially preserve data structure
 
@@ -238,6 +241,53 @@ def resample_data(
     df_final.reset_index(inplace=True)
 
     return df_final
+
+
+def print_column_frequencies(df):
+    # Ensure the 'timestamp' column is sorted
+    if not df.index.is_monotonic_increasing:
+        raise ValueError("Timestamp column must be sorted in ascending order")
+
+    # Initialize a dictionary to store frequencies of each column
+    frequency_dict = {}
+    overall_mean_frequencies = []
+
+    for column in df.columns:
+        # Filter out NaN values
+        valid_df = df[[column]].dropna()
+
+        # Skip empty columns
+        if valid_df.empty:
+            continue
+
+        # Calculate time intervals between valid timestamps
+        intervals = valid_df.index.to_series().diff().dt.total_seconds().dropna()
+
+        # Calculate mean interval and frequency
+        mean_interval = intervals.mean()
+        if mean_interval == 0:
+            frequency_dict[column] = float('inf')  # Infinite frequency if intervals are zero
+        else:
+            frequency_dict[column] = 1 / mean_interval
+
+        # Collect mean frequencies for overall calculation
+        overall_mean_frequencies.append(1 / mean_interval)
+
+    # Print frequencies of each column
+    for col, freq in frequency_dict.items():
+        print(f"Frequency of {col}: {freq} Hz")
+
+    # Identify the column with the highest and lowest frequency
+    max_freq_col = max(frequency_dict, key=frequency_dict.get)
+    min_freq_col = min(frequency_dict, key=frequency_dict.get)
+    print(f"Highest frequency column: {max_freq_col} with {frequency_dict[max_freq_col]} Hz")
+    print(f"Lowest frequency column: {min_freq_col} with {frequency_dict[min_freq_col]} Hz")
+
+    # Calculate and print overall mean frequency
+    overall_mean_frequency = sum(overall_mean_frequencies) / len(overall_mean_frequencies) if overall_mean_frequencies else 0
+    print(f"Overall mean frequency of DataFrame: {overall_mean_frequency} Hz")
+
+    return frequency_dict
 
 
 def merge_csv(
