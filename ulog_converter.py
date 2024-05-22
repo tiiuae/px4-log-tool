@@ -53,15 +53,15 @@ from typing import List, Dict, Any
 
 
 def convert_ulog2csv(
-        directory_address: str,
-        ulog_file_name: str,
-        messages: List[str] = None,
-        output: str = ".",
-        blacklist: List[str] = None,
-        delimiter: str = ",",
-        time_s: float = None,
-        time_e: float = None,
-        disable_str_exceptions: bool = False,
+    directory_address: str,
+    ulog_file_name: str,
+    messages: List[str] = None,
+    output: str = ".",
+    blacklist: List[str] = None,
+    delimiter: str = ",",
+    time_s: float = None,
+    time_e: float = None,
+    disable_str_exceptions: bool = False,
 ) -> None:
     """
     Converts a PX4 ULog file to CSV files.
@@ -161,14 +161,14 @@ def convert_ulog2csv(
 
 
 def resample_data(
-        df: pd.DataFrame,
-        target_frequency_hz: float,
-        num_method: str = "mean",
-        cat_method: str = "ffill",
-        interpolate_numerical: bool = False,
-        interpolate_method: str = "linear",
-        num_labels: List[str] = None,
-        cat_labels: List[str] = None,
+    df: pd.DataFrame,
+    target_frequency_hz: float,
+    num_method: str = "mean",
+    cat_method: str = "ffill",
+    interpolate_numerical: bool = False,
+    interpolate_method: str = "linear",
+    num_labels: List[str] = None,
+    cat_labels: List[str] = None,
 ) -> pd.DataFrame:
     """
     Resamples a DataFrame to a specified frequency, handling numerical and categorical data.
@@ -232,33 +232,27 @@ def resample_data(
 
     # Reset index to return timestamp as a column
     resampled_df.reset_index(inplace=True)
-    resampled_df['timestamp'] = pd.to_datetime(resampled_df['timestamp'])
-    resampled_df['timestamp'] = resampled_df['timestamp'].astype('int64') // 10 ** 3
+    resampled_df["timestamp"] = pd.to_datetime(resampled_df["timestamp"])
+    resampled_df["timestamp"] = resampled_df["timestamp"].astype("int64") // 10**3
     # resampled_df = resampled_df['timestamp'].astype('int64') // 1000
     return resampled_df
 
 
 def merge_csv(
-        root: str,
-        files: List[str],
-        msg_reference: pd.DataFrame = None,
-        resample: bool = False,
-        sampling_params: Dict[str, Any] = None,
+    root: str,
+    files: List[str],
 ) -> None:
     """
     Merges multiple CSV files in a directory, handling column renaming and resampling.
 
     This function merges CSV files found in the specified directory into a single 'merged.csv' file.
     Column names are intelligently renamed to avoid conflicts, and a 'mission_name' column is added
-    to identify the source directory. Optionally, the merged data can be resampled based on 
+    to identify the source directory. Optionally, the merged data can be resampled based on
     parameters provided in `sampling_params`.
 
     Args:
         root: The directory path containing the CSV files to merge.
         files: A list of filenames within the 'root' directory.
-        msg_reference: (Optional) A DataFrame containing column alias mappings for resampling.
-        resample: (Optional) If True, resample the merged DataFrame using `sampling_params`. Defaults to False.
-        sampling_params: (Optional) A dictionary containing resampling parameters (required if `resample` is True).
 
     Returns:
         None. The merged and potentially resampled DataFrame is saved as 'merged.csv'
@@ -294,11 +288,57 @@ def merge_csv(
     # This gets you the label
     merged_df.sort_values(by="timestamp", inplace=True)
 
-    if resample:
-        reference = deepcopy(msg_reference)
-        num_labels = []
-        cat_labels = []
+    merged_df["mission_name"] = os.path.basename(root)
 
+    preamble = ["mission_name", "timestamp"]
+    body = sorted([col for col in merged_df.columns if col not in preamble])
+    merged_df = merged_df[preamble + body]
+
+    merged_df.to_csv(os.path.join(root, "merged.csv"), index=False)
+
+
+def resample_unified(
+    unified_df: pd.DataFrame = None,
+    msg_reference: pd.DataFrame = None,
+    resample_params: Dict[str, Any] = None,
+    verbose: bool = False,
+) -> pd.DataFrame:
+    """
+    Resamples a unified dataframe based on the message reference and resample parameters.
+
+    This function iterates through each mission in the unified dataframe, identifies numerical and categorical labels
+    based on a provided message reference, and then applies the `resample_data` function to resample the data for each mission.
+    The resampled dataframes are then concatenated into a single dataframe and returned.
+
+    Args:
+        unified_df (pd.DataFrame): The unified dataframe to be resampled.
+        msg_reference (pd.DataFrame): A dataframe containing message references (Alias, Dataclass).
+        resample_params (dict): A dictionary containing resampling parameters:
+            * target_frequency_hz (float): The target resampling frequency in Hz.
+            * num_method (str): The resampling method for numerical data.
+            * cat_method (str): The resampling method for categorical data.
+            * interpolate_numerical (bool): Whether to interpolate numerical data.
+            * interpolate_method (str): The interpolation method for numerical data.
+        verbose (bool): Verbose output.
+
+    Returns:
+        pd.DataFrame: The resampled dataframe.
+    """
+
+    reference = deepcopy(msg_reference)
+    num_labels = []
+    cat_labels = []
+    mission_names = sorted(unified_df["mission_name"].unique())
+
+    resampled_df = pd.DataFrame()
+    
+    i = 0
+    if verbose:
+        print("Resampling Progress:")
+        progress_bar(i / len(mission_names))
+
+    for mission in mission_names:
+        merged_df = unified_df[unified_df["mission_name"] == mission]
         for label in merged_df.columns:
             if label == "timestamp" or label == "mission_name":
                 continue
@@ -313,23 +353,26 @@ def merge_csv(
                 cat_labels.append(label)
 
         merged_df = resample_data(
-            merged_df,
-            sampling_params["target_frequency_hz"],
-            sampling_params["num_method"],
-            sampling_params["cat_method"],
-            sampling_params["interpolate_numerical"],
-            sampling_params["interpolate_method"],
+            merged_df[merged_df.columns[1:]].copy(),
+            resample_params["target_frequency_hz"],
+            resample_params["num_method"],
+            resample_params["cat_method"],
+            resample_params["interpolate_numerical"],
+            resample_params["interpolate_method"],
             num_labels,
             cat_labels,
         )
+        merged_df["mission_name"] = mission
+        merged_df = merged_df[["mission_name"] + list(merged_df.columns)[:-1]]
+        num_labels = []
+        cat_labels = []
+        resampled_df = pd.concat([resampled_df, merged_df])
 
-    merged_df["mission_name"] = os.path.basename(root)
+        i += 1
+        if verbose:
+            progress_bar(i / len(mission_names))
 
-    preamble = ["mission_name", "timestamp"]
-    body = sorted([col for col in merged_df.columns if col not in preamble])
-    merged_df = merged_df[preamble + body]
-
-    merged_df.to_csv(os.path.join(root, "merged.csv"), index=False)
+    return resampled_df
 
 
 def progress_bar(progress: float) -> None:
@@ -473,49 +516,11 @@ def main():
         print("")
 
     processes = []
-    msg_reference = None
-    if resample:
-        try:
-            msg_reference = pd.read_csv(os.path.join(os.getcwd(), "msg_reference.csv"))
-        except FileNotFoundError:
-            print("Error: msg_reference.csv not found.")
-            print(
-                "Case 1 -- Ensure that the msg_reference.csv file is present in the directory this script is being run from.")
-            print("Case 2 -- Please restore this repository or download this file from the source.")
-            print("Case 3 -- If resampling is not desired, please remove the resample flag from the command line.")
-            return
-
-        try:
-            _ = data["resample_params"]["target_frequency_hz"]
-            _ = data["resample_params"]["num_method"]
-            _ = data["resample_params"]["cat_method"]
-            _ = data["resample_params"]["interpolate_numerical"]
-            _ = data["resample_params"]["interpolate_method"]
-        except KeyError:
-            print("Warning: Incomplete resampling parameters provided in filter.yaml.")
-            print("Using default values.")
-            print("")
-            data["resample_params"] = {
-                "target_frequency_hz": 10,
-                "num_method": "mean",
-                "cat_method": "ffill",
-                "interpolate_numerical": True,
-                "interpolate_method": "linear",
-            }
-
-        if verbose:
-            print("Resampling:")
-            print(f"-- target_frequency_hz: {data['resample_params']['target_frequency_hz']}")
-            print(f"-- num_method: {data['resample_params']['num_method']}")
-            print(f"-- cat_method: {data['resample_params']['cat_method']}")
-            print(f"-- target_frequency_hz: {data['resample_params']['interpolate_numerical']}")
-            print(f"-- interpolate_method: {data['resample_params']['interpolate_method']}")
-            print("")
 
     for file in csv_files:
         process = Process(
             target=merge_csv,
-            args=(file[0], file[1], msg_reference, resample, data["resample_params"]),
+            args=(file[0], file[1]),
         )
         processes.append(process)
         process.start()
@@ -546,6 +551,52 @@ def main():
     unified_df = pd.concat(
         [pd.read_csv(os.path.join(file, "merged.csv")) for file in merge_files]
     )
+
+    msg_reference = None
+    if resample:
+        print("")
+        print("")
+        print("-------------------------------------------------------------------------------------")
+        print("Resampling `unified.csv`.")
+        try:
+            msg_reference = pd.read_csv(os.path.join(os.getcwd(), "msg_reference.csv"))
+        except FileNotFoundError:
+            print("Error: msg_reference.csv not found.")
+            print("Case 1 -- Ensure that the msg_reference.csv file is present in the directory this script is being run from.")
+            print("Case 2 -- Please restore this repository or download this file from the source.")
+            print("Case 3 -- If resampling is not desired, please remove the resample flag from the command line.")
+            return
+
+        try:
+            _ = data["resample_params"]["target_frequency_hz"]
+            _ = data["resample_params"]["num_method"]
+            _ = data["resample_params"]["cat_method"]
+            _ = data["resample_params"]["interpolate_numerical"]
+            _ = data["resample_params"]["interpolate_method"]
+        except KeyError:
+            print("Warning: Incomplete resampling parameters provided in filter.yaml.")
+            print("Using default values.")
+            print("")
+            data["resample_params"] = {
+                "target_frequency_hz": 10,
+                "num_method": "mean",
+                "cat_method": "ffill",
+                "interpolate_numerical": True,
+                "interpolate_method": "linear",
+            }
+
+        if verbose:
+            print("Resampling parameters:")
+            print(f"-- target_frequency_hz: {data['resample_params']['target_frequency_hz']}")
+            print(f"-- num_method: {data['resample_params']['num_method']}")
+            print(f"-- cat_method: {data['resample_params']['cat_method']}")
+            print(f"-- target_frequency_hz: {data['resample_params']['interpolate_numerical']}")
+            print(f"-- interpolate_method: {data['resample_params']['interpolate_method']}")
+            print("")
+        unified_df = resample_unified(
+            unified_df, msg_reference, data["resample_params"], verbose
+        )
+
     unified_df.to_csv("unified.csv", index=False)
 
     if clean:
