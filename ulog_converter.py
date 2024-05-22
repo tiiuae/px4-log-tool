@@ -39,29 +39,30 @@ resample_params:
 """
 
 import argparse
-import numpy as np
-from collections import Counter
-import yaml
 import os
 import shutil
 import sys
-import pandas as pd
-from pyulog import ULog
-from multiprocessing import Process
+from collections import Counter
 from copy import deepcopy
+from multiprocessing import Process
 from typing import List, Dict, Any
+
+import numpy as np
+import pandas as pd
+import yaml
+from pyulog import ULog
 
 
 def convert_ulog2csv(
-    directory_address: str,
-    ulog_file_name: str,
-    messages: List[str] = None,
-    output: str = ".",
-    blacklist: List[str] = None,
-    delimiter: str = ",",
-    time_s: float = None,
-    time_e: float = None,
-    disable_str_exceptions: bool = False,
+        directory_address: str,
+        ulog_file_name: str,
+        messages: List[str] = None,
+        output: str = ".",
+        blacklist: List[str] = None,
+        delimiter: str = ",",
+        time_s: float = None,
+        time_e: float = None,
+        disable_str_exceptions: bool = False,
 ) -> None:
     """
     Converts a PX4 ULog file to CSV files.
@@ -161,14 +162,14 @@ def convert_ulog2csv(
 
 
 def resample_data(
-    df: pd.DataFrame,
-    target_frequency_hz: float,
-    num_method: str = "mean",
-    cat_method: str = "ffill",
-    interpolate_numerical: bool = False,
-    interpolate_method: str = "linear",
-    num_labels: List[str] = None,
-    cat_labels: List[str] = None,
+        df: pd.DataFrame,
+        target_frequency_hz: float,
+        num_method: str = "mean",
+        cat_method: str = "last",
+        interpolate_numerical: bool = False,
+        interpolate_method: str = "linear",
+        num_labels: List[str] = None,
+        cat_labels: List[str] = None,
 ) -> pd.DataFrame:
     """
     Resamples a DataFrame to a specified frequency, handling numerical and categorical data.
@@ -181,7 +182,7 @@ def resample_data(
         df: The DataFrame containing the data to resample. The DataFrame must have a
             'timestamp' column with datetime values.
         target_frequency_hz: The target resampling frequency in Hz.
-        num_method: The method to use for downsampling numerical data ('mean', 'median', 'max', 'min', 'sum').
+        num_method: The method to use for downsampling numerical data ('mean', 'median', 'max', 'min', 'sum'). This is only applied if `interpolate_numerical = False`
             Defaults to 'mean'.
         cat_method: The method to use for downsampling categorical data ('ffill', 'bfill', 'mode').
             Defaults to 'ffill'.
@@ -194,53 +195,49 @@ def resample_data(
     Returns:
         The resampled DataFrame with the 'timestamp' column reset as a regular column.
     """
-    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="us")
-
-    # Set the timestamp column as the index if it is not already
-    if df.index.name != "timestamp":
-        df = df.set_index("timestamp")
-
-    # Convert frequency from Hz to pandas offset
+    # Convert the target frequency from Hz to a pandas frequency string
     milliseconds_per_sample = 1000 / target_frequency_hz
     pandas_freq = f"{round(milliseconds_per_sample)}L"
 
-    # Determine column types
-    if num_labels is None or cat_labels is None:
-        num_labels = df.select_dtypes(include=[np.number]).columns
-        cat_labels = df.select_dtypes(exclude=[np.number]).columns
+    # Set the timestamp column as the index if it is not already
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="us")
+    if df.index.name != "timestamp":
+        df = df.set_index("timestamp")
 
-    # Resample numerical columns
-    resampled_num = df[num_labels].resample(pandas_freq).agg(num_method)
+    # Resample the entire DataFrame using a simple aggregation initially
+    df_resampled = df.resample(pandas_freq).last()  # Use 'last' to initially preserve data structure
 
-    # Optionally interpolate numerical data
-    if interpolate_numerical:
-        resampled_num = resampled_num.interpolate(method=interpolate_method)
+    # Identify numerical and categorical columns if not provided
+    if num_labels is None:
+        num_labels = df.select_dtypes(include=[np.number]).columns.tolist()
+    if cat_labels is None:
+        cat_labels = df.select_dtypes(exclude=[np.number]).columns.tolist()
 
-    # Resample categorical columns
-    if cat_method == "mode":
-        # 'mode' is not directly supported in resample.agg, so use a custom function
-        resampled_cat = (
-            df[cat_labels]
-            .resample(pandas_freq)
-            .agg(lambda x: x.mode()[0] if not x.empty else np.nan)
-        )
-    else:
-        resampled_cat = df[cat_labels].resample(pandas_freq).agg(cat_method)
+    # Apply specific methods for numerical data
+    if num_labels:
+        df_num = df_resampled[num_labels]
+        if interpolate_numerical:
+            df_num = df_num.interpolate(method=interpolate_method)
+        else:
+            df_num = df_num.apply(lambda x: x.resample(pandas_freq).agg(num_method))
 
-    # Combine results
-    resampled_df = pd.concat([resampled_num, resampled_cat], axis=1)
+    # Apply specific methods for categorical data
+    df_cat = df_resampled[cat_labels]
+    df_cat = df_cat.fillna(method=cat_method)
 
-    # Reset index to return timestamp as a column
-    resampled_df.reset_index(inplace=True)
-    resampled_df["timestamp"] = pd.to_datetime(resampled_df["timestamp"])
-    resampled_df["timestamp"] = resampled_df["timestamp"].astype("int64") // 10**3
-    # resampled_df = resampled_df['timestamp'].astype('int64') // 1000
-    return resampled_df
+    # Concatenate numerical and categorical data back together
+    df_final = pd.concat([df_num, df_cat], axis=1)
+    df_final = df_final.ffill().bfill()  # ensure that no new NaNs are introduced
+
+    # Ensure df_final has the timestamp in a column
+    df_final.reset_index(inplace=True)
+
+    return df_final
 
 
 def merge_csv(
-    root: str,
-    files: List[str],
+        root: str,
+        files: List[str],
 ) -> None:
     """
     Merges multiple CSV files in a directory, handling column renaming and resampling.
@@ -298,10 +295,10 @@ def merge_csv(
 
 
 def resample_unified(
-    unified_df: pd.DataFrame = None,
-    msg_reference: pd.DataFrame = None,
-    resample_params: Dict[str, Any] = None,
-    verbose: bool = False,
+        unified_df: pd.DataFrame = None,
+        msg_reference: pd.DataFrame = None,
+        resample_params: Dict[str, Any] = None,
+        verbose: bool = False,
 ) -> pd.DataFrame:
     """
     Resamples a unified dataframe based on the message reference and resample parameters.
@@ -331,7 +328,7 @@ def resample_unified(
     mission_names = sorted(unified_df["mission_name"].unique())
 
     resampled_df = pd.DataFrame()
-    
+
     i = 0
     if verbose:
         print("Resampling Progress:")
