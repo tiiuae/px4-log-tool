@@ -87,8 +87,8 @@ VehicleLocalPosition,,,,,,,,
 ,,,VehicleLocalPosition_x,x,Float,metres,Numerical,North position in NED earth-fixed frame
 ,,,VehicleLocalPosition_y,y,Float,metres,Numerical,East position in NED earth-fixed frame
 ,,,VehicleLocalPosition_z,z,Float,metres,Numerical,Down position (negative altitude) in NED earth-fixed frame
-,,,VehicleLocalPosition_delta_x,delta_xy_0,Float,metres,Numerical,Amount of lateral shift of position estimate in latest reset in x
-,,,VehicleLocalPosition_delta_y,delta_xy_1,Float,metres,Numerical,Amount of lateral shift of position estimate in latest reset in y
+,,,VehicleLocalPosition_delta_xy_0,delta_xy_0,Float,metres,Numerical,Amount of lateral shift of position estimate in latest reset in x
+,,,VehicleLocalPosition_delta_xy_1,delta_xy_1,Float,metres,Numerical,Amount of lateral shift of position estimate in latest reset in y
 ,,,VehicleLocalPosition_xy_reset_counter,xy_reset_counter,Integer,,Categorical,Index of latest lateral position estimate reset
 ,,,VehicleLocalPosition_delta_z,delta_z,Float,metres,Numerical,Amount of vertical shift of position estimate in latest reset
 ,,,VehicleLocalPosition_z_reset_counter,z_reset_counter,Integer,,Categorical,Index of latest vertical position estimate reset
@@ -96,8 +96,8 @@ VehicleLocalPosition,,,,,,,,
 ,,,VehicleLocalPosition_vy,vy,Float,m/s,Numerical,East velocity in NED earth-fixed frame
 ,,,VehicleLocalPosition_vz,vz,Float,m/s,Numerical,Down velocity in NED earth-fixed frame
 ,,,VehicleLocalPosition_z_deriv,z_deriv,Float,m/s,Numerical,Down position in time derivative of NED earth-fixed frame
-,,,VehicleLocalPosition_delta_vx,delta_vxy_0,Float,m/s,Numerical,Amount of lateral shift of velocity estimate in latest reset in x
-,,,VehicleLocalPosition_delta_vy,delta_vxy_1,Float,m/s,Numerical,Amount of lateral shift of velocity estimate in latest reset in y
+,,,VehicleLocalPosition_delta_vxy_0,delta_vxy_0,Float,m/s,Numerical,Amount of lateral shift of velocity estimate in latest reset in x
+,,,VehicleLocalPosition_delta_vxy_1,delta_vxy_1,Float,m/s,Numerical,Amount of lateral shift of velocity estimate in latest reset in y
 ,,,VehicleLocalPosition_vxy_reset_counter,vxy_reset_counter,Integer,,Categorical,Index of latest lateral velocity estimate reset
 ,,,VehicleLocalPosition_delta_vz,delta_vz,Float,m/s,Numerical,Amount of vertical shift of velocity estimate in latest reset
 ,,,VehicleLocalPosition_vz_reset_counter,vz_reset_counter,Integer,,Categorical,Index of latest vertical velocity estimate reset
