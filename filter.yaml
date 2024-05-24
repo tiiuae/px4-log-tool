@@ -1,5 +1,6 @@
 whitelist_messages:
   - "sensor_combined"
+  - "vehicle_local_position"
 blacklist_headers:
   - "timestamp_sample"
   - "device_id"
