@@ -1,4 +1,5 @@
 import pandas as pd
+import warnings
 from typing import List
 
 def resample_data(
@@ -26,7 +27,7 @@ def resample_data(
         num_method: The method to use for downsampling numerical data ('mean', 'median', 'max', 'min', 'sum'). This is only applied if `interpolate_numerical = False`
             Defaults to 'mean'.
         cat_method: The method to use for downsampling categorical data ('ffill', 'bfill', 'mode').
-            Defaults to 'ffill'.
+            Defaults to 'last'.
         interpolate_numerical: Whether to interpolate numerical data after resampling. Defaults to False.
         interpolate_method: The interpolation method to use if interpolation is enabled (e.g., 'linear', 'nearest', 'spline').
             Defaults to 'linear'.
@@ -74,7 +75,9 @@ def resample_data(
 
     # Apply specific methods for categorical data
     df_cat = df_resampled[cat_columns]
-    df_cat = df_cat.fillna(method=cat_method)
+    with warnings.catch_warnings():
+        warnings.simplefilter(action='ignore', category=FutureWarning)
+        df_cat = df_cat.fillna(method=cat_method)
 
     # Concatenate numerical and categorical data back together
     df_final = pd.concat([df_num, df_cat], axis=1)
