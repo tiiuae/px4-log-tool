@@ -4,8 +4,6 @@ blacklist_headers:
   - "timestamp_sample"
   - "device_id"
   - "error_count"
-  - "accelerometer_timestamp_relative"
-  - "gyro_calibration_count"
 resample_params:
   target_frequency_hz: 100
   num_method: 'mean'
