@@ -19,8 +19,7 @@ def merge_csv(
         files: A list of filenames within the 'root' directory.
 
     Returns:
-        None. The merged and potentially resampled DataFrame is saved as 'merged.csv'
-        in the 'root' directory.
+        None. The merged and potentially resampled DataFrame is saved as 'merged.csv' in the 'root' directory.
     """
 
     merged_df = pd.DataFrame(data={"timestamp": []})
@@ -61,7 +60,7 @@ def merge_csv(
     merged_df.to_csv(os.path.join(root, "merged.csv"), index=False)
 
 
-blacklist = ["timestamp_sample", "device_id"]
+# blacklist = ["timestamp_sample", "device_id"]
 
 # def merge_csv_files(directory, silent_prefix=False, output="merged.csv"):
 #     global blacklist

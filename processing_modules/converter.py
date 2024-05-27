@@ -10,9 +10,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 import yaml
-from mcap_ros2.reader import read_ros2_messages
 from pyulog import ULog
-from rosidl_runtime_py import message_to_ordereddict
 
 
 def convert_ulog2csv(
@@ -66,9 +64,14 @@ def convert_ulog2csv(
         pass
 
     # Mark duplicated
-    counts = Counter(
-        [d.name.replace("/", "_") for d in data if d.name.replace("/", "_") in messages]
-    )
+    if messages != None:
+        counts = Counter(
+            [d.name.replace("/", "_") for d in data if d.name.replace("/", "_") in messages]
+        )
+    else:
+        counts = Counter(
+            [d.name.replace("/", "_") for d in data]
+        )
     redundant_msgs = [string for string, count in counts.items() if count > 1]
 
     for d in data:
@@ -134,7 +137,8 @@ def px4_mcap_to_csv(mcap_dir: str) -> None:
     Raises:
         FileNotFoundError: If no MCAP files are found in the specified directory.
     """
-    import px4_msgs.msg
+    from mcap_ros2.reader import read_ros2_messages
+    from rosidl_runtime_py import message_to_ordereddict
 
     try:
         mcap_filename = glob(os.path.join(mcap_dir, "*.mcap"))[0]

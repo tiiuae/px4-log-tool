@@ -108,6 +108,8 @@ def resample_unified(
             else:
                 cat_labels.append(label)
 
+        # TODO Change from hardcoded verbose
+        ### Currently it is way too verbose at the resampler
         merged_df = resample_data(
             merged_df[merged_df.columns[1:]].copy(),
             resample_params["target_frequency_hz"],
@@ -117,6 +119,7 @@ def resample_unified(
             resample_params["interpolate_method"],
             num_labels,
             cat_labels,
+            verbose=False,
         )
         merged_df["mission_name"] = mission
         merged_df = merged_df[["mission_name"] + list(merged_df.columns)[:-1]]
@@ -350,10 +353,8 @@ def main():
             print(f"-- interpolate_method: {data['resample_params']['interpolate_method']}")
             print("")
 
-        # TODO Change from hardcoded verbose
-        ### Currently it is way too verbose at the resampler
         unified_df = resample_unified(
-            unified_df, msg_reference, data["resample_params"], verbose=False
+            unified_df, msg_reference, data["resample_params"], verbose
         )
 
     unified_df.to_csv("unified.csv", index=False)
