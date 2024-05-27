@@ -1,17 +1,19 @@
 #!/usr/bin python3
 
-import numpy as np
 import importlib
 import os
-import pandas as pd
-import yaml
 from collections import Counter
 from copy import deepcopy
 from glob import glob
+from typing import List
+
+import numpy as np
+import pandas as pd
+import yaml
 from mcap_ros2.reader import read_ros2_messages
 from pyulog import ULog
 from rosidl_runtime_py import message_to_ordereddict
-from typing import List
+
 
 def convert_ulog2csv(
         directory_address: str,
@@ -156,7 +158,7 @@ def px4_mcap_to_csv(mcap_dir: str) -> None:
         module = importlib.import_module(msg_addr[0])
         message_package = getattr(module, msg_addr[1])
         message = getattr(message_package, msg_addr[2])
-        
+
         empty_msg_dict = message_to_ordereddict(message())
         msg_rosdict[message().__class__.__name__] = empty_msg_dict
 
