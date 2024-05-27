@@ -1,20 +1,15 @@
 #!/usr/bin python3
 
+import numpy as np
 import importlib
 import os
+import pandas as pd
+import yaml
 from collections import Counter
 from copy import deepcopy
 from glob import glob
-<< << << < HEAD
-== == == =
->> >> >> > 3
-f2b005c46c415a6032a2e6fedbffd9377098831
-from typing import List
-
-import numpy as np
-import pandas as pd
-import yaml
 from pyulog import ULog
+from typing import List
 
 
 def convert_ulog2csv(
@@ -141,6 +136,7 @@ def px4_mcap_to_csv(mcap_dir: str) -> None:
     Raises:
         FileNotFoundError: If no MCAP files are found in the specified directory.
     """
+    import px4_msgs.msg
     from mcap_ros2.reader import read_ros2_messages
     from rosidl_runtime_py import message_to_ordereddict
 
