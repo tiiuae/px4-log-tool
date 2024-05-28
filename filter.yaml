@@ -1,12 +1,12 @@
 whitelist_messages:
-  - "sensor_combined"
-  - "vehicle_local_position"
+  - "battery_status"
+  - "sensor_baro"
 blacklist_headers:
   - "timestamp_sample"
   - "device_id"
   - "error_count"
 resample_params:
-  target_frequency_hz: 100
+  target_frequency_hz: 1
   num_method: 'mean'
   cat_method: 'bfill'
   interpolate_numerical: True
