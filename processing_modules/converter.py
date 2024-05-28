@@ -11,6 +11,7 @@ from glob import glob
 from pyulog import ULog
 from typing import List
 
+
 def convert_ulog2csv(
         directory_address: str,
         ulog_file_name: str,
@@ -161,7 +162,7 @@ def px4_mcap_to_csv(mcap_dir: str) -> None:
         module = importlib.import_module(msg_addr[0])
         message_package = getattr(module, msg_addr[1])
         message = getattr(message_package, msg_addr[2])
-        
+
         empty_msg_dict = message_to_ordereddict(message())
         msg_rosdict[message().__class__.__name__] = empty_msg_dict
 

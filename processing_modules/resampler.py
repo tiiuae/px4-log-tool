@@ -135,4 +135,3 @@ def print_column_frequencies(df):
 
     return frequency_dict
 
-
