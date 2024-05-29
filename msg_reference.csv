@@ -133,29 +133,29 @@ VehicleOdometry,,,,,,,,
 ,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
 ,,,VehicleOdometry_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
 ,,,VehicleOdometry_pose_frame,pose_frame,Integer,,Categorical,"Position and orientation frame of reference. [0: Unknown; 1: NED earth-fixed frame; 2: FRD world-fixed frame, arbitrary heading reference]"
-,,,VehicleOdometry_position_x,position_0,Float,metres,Numerical,Position in x. Frame of reference defined by local_frame.
-,,,VehicleOdometry_position_y,position_1,Float,metres,Numerical,Position in y. Frame of reference defined by local_frame.
-,,,VehicleOdometry_position_z,position_2,Float,metres,Numerical,Position in z. Frame of reference defined by local_frame.
+,,,VehicleOdometry_position_0,position_0,Float,metres,Numerical,Position in x. Frame of reference defined by local_frame.
+,,,VehicleOdometry_position_1,position_1,Float,metres,Numerical,Position in y. Frame of reference defined by local_frame.
+,,,VehicleOdometry_position_2,position_2,Float,metres,Numerical,Position in z. Frame of reference defined by local_frame.
 ,,,VehicleOdometry_q_0,q_0,Float,,Numerical,Quaternion rotation from FRD body frame to reference frame on axis w
 ,,,VehicleOdometry_q_1,q_1,Float,,Numerical,Quaternion rotation from FRD body frame to reference frame on axis x
 ,,,VehicleOdometry_q_2,q_2,Float,,Numerical,Quaternion rotation from FRD body frame to reference frame on axis y
 ,,,VehicleOdometry_q_3,q_3,Float,,Numerical,Quaternion rotation from FRD body frame to reference frame on axis z
 ,,,VehicleOdometry_velocity_frame,velocity_frame,Integer,,Categorical,"Reference frame of velocity data. [0: Unknown; 1: NED earth-fixed frame; 2: FRD world-fixed frame, arbitrary heading reference]"
-,,,VehicleOdometry_velocity_x,velocity_0,Float,m/s,Numerical,Velocity in x. Frame of reference defined by velocity_frame variable.
-,,,VehicleOdometry_velocity_y,velocity_1,Float,m/s,Numerical,Velocity in y. Frame of reference defined by velocity_frame variable.
-,,,VehicleOdometry_velocity_z,velocity_2,Float,m/s,Numerical,Velocity in z. Frame of reference defined by velocity_frame variable.
-,,,VehicleOdometry_angular_velocity_x,angular_velocity_0,Float,rad/s,Numerical,Angular velocity in body-fixed frame in roll
-,,,VehicleOdometry_angular_velocity_y,angular_velocity_1,Float,rad/s,Numerical,Angular velocity in body-fixed frame in pitch
-,,,VehicleOdometry_angular_velocity_z,angular_velocity_2,Float,rad/s,Numerical,Angular velocity in body-fixed frame in yaw
-,,,VehicleOdometry_position_variance_x,position_variance_0,Float,metres,Numerical,Variance in position x
-,,,VehicleOdometry_position_variance_y,position_variance_1,Float,metres,Numerical,Variance in position y
-,,,VehicleOdometry_position_variance_z,position_variance_2,Float,metres,Numerical,Variance in position z
-,,,VehicleOdometry_orientation_variance_x,orientation_variance_0,Float,radians,Numerical,Variance in orientation roll
-,,,VehicleOdometry_orientation_variance_y,orientation_variance_1,Float,radians,Numerical,Variance in orientation pitch
-,,,VehicleOdometry_orientation_variance_z,orientation_variance_2,Float,radians,Numerical,Variance in orientation yaw
-,,,VehicleOdometry_velocity_variance_x,velocity_variance_0,Float,m/s,Numerical,Variance in velocity x
-,,,VehicleOdometry_velocity_variance_y,velocity_variance_1,Float,m/s,Numerical,Variance in velocity y
-,,,VehicleOdometry_velocity_variance_z,velocity_variance_2,Float,m/s,Numerical,Variance in velocity z
+,,,VehicleOdometry_velocity_0,velocity_0,Float,m/s,Numerical,Velocity in x. Frame of reference defined by velocity_frame variable.
+,,,VehicleOdometry_velocity_1,velocity_1,Float,m/s,Numerical,Velocity in y. Frame of reference defined by velocity_frame variable.
+,,,VehicleOdometry_velocity_2,velocity_2,Float,m/s,Numerical,Velocity in z. Frame of reference defined by velocity_frame variable.
+,,,VehicleOdometry_angular_velocity_0,angular_velocity_0,Float,rad/s,Numerical,Angular velocity in body-fixed frame in roll
+,,,VehicleOdometry_angular_velocity_1,angular_velocity_1,Float,rad/s,Numerical,Angular velocity in body-fixed frame in pitch
+,,,VehicleOdometry_angular_velocity_2,angular_velocity_2,Float,rad/s,Numerical,Angular velocity in body-fixed frame in yaw
+,,,VehicleOdometry_position_variance_0,position_variance_0,Float,metres,Numerical,Variance in position x
+,,,VehicleOdometry_position_variance_1,position_variance_1,Float,metres,Numerical,Variance in position y
+,,,VehicleOdometry_position_variance_2,position_variance_2,Float,metres,Numerical,Variance in position z
+,,,VehicleOdometry_orientation_variance_0,orientation_variance_0,Float,radians,Numerical,Variance in orientation roll
+,,,VehicleOdometry_orientation_variance_1,orientation_variance_1,Float,radians,Numerical,Variance in orientation pitch
+,,,VehicleOdometry_orientation_variance_2,orientation_variance_2,Float,radians,Numerical,Variance in orientation yaw
+,,,VehicleOdometry_velocity_variance_0,velocity_variance_0,Float,m/s,Numerical,Variance in velocity x
+,,,VehicleOdometry_velocity_variance_1,velocity_variance_1,Float,m/s,Numerical,Variance in velocity y
+,,,VehicleOdometry_velocity_variance_2,velocity_variance_2,Float,m/s,Numerical,Variance in velocity z
 ,,,VehicleOdometry_reset_counter,reset_counter,Integer,,Categorical,Number of times stream was reset
 ,,,VehicleOdometry_quality,quality,Integer,,Categorical,
 VehicleGlobalPosition,,,,,,,,
@@ -188,18 +188,18 @@ VehicleAttitude,,,,,,,,
 VehicleAcceleration,,,,,,,,
 ,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
 ,,,VehicleAcceleration_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
-,,,VehicleAcceleration_x,xyz_0,Float,m/s^2,Numerical,Bias corrected acceleration (including gravity) in the FRD body frame y-axis
-,,,VehicleAcceleration_y,xyz_1,Float,m/s^2,Numerical,Bias corrected acceleration (including gravity) in the FRD body frame x-axis
-,,,VehicleAcceleration_z,xyz_2,Float,m/s^2,Numerical,Bias corrected acceleration (including gravity) in the FRD body frame z-axis
+,,,VehicleAcceleration_xyz_0,xyz_0,Float,m/s^2,Numerical,Bias corrected acceleration (including gravity) in the FRD body frame y-axis
+,,,VehicleAcceleration_xyz_1,xyz_1,Float,m/s^2,Numerical,Bias corrected acceleration (including gravity) in the FRD body frame x-axis
+,,,VehicleAcceleration_xyz_2,xyz_2,Float,m/s^2,Numerical,Bias corrected acceleration (including gravity) in the FRD body frame z-axis
 VehicleAngularVelocity,,,,,,,,
 ,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
 ,,,VehicleAngularVelocity_timestamp_sample,timestamp_sample,Time,microseconds,Numerical,Timestamp of raw data
-,,,VehicleAngularVelocity_x,xyz_0,Float,rad/s,Numerical,Bias corrected angular velocity in the FRD body frame y-axis
-,,,VehicleAngularVelocity_y,xyz_1,Float,rad/s,Numerical,Bias corrected angular velocity in the FRD body frame x-axis
-,,,VehicleAngularVelocity_z,xyz_2,Float,rad/s,Numerical,Bias corrected angular velocity in the FRD body frame z-axis
-,,,VehicleAngularVelocity_x_derivative,xyz_derivative_0,Float,rad/s^2,Numerical,Angular acceleration about the FRD body frame x-axis
-,,,VehicleAngularVelocity_y_derivative,xyz_derivative_1,Float,rad/s^2,Numerical,Angular acceleration about the FRD body frame y-axis
-,,,VehicleAngularVelocity_z_derivative,xyz_derivative_2,Float,rad/s^2,Numerical,Angular acceleration about the FRD body frame z-axis
+,,,VehicleAngularVelocity_xyz_0,xyz_0,Float,rad/s,Numerical,Bias corrected angular velocity in the FRD body frame y-axis
+,,,VehicleAngularVelocity_xyz_1,xyz_1,Float,rad/s,Numerical,Bias corrected angular velocity in the FRD body frame x-axis
+,,,VehicleAngularVelocity_xyz_2,xyz_2,Float,rad/s,Numerical,Bias corrected angular velocity in the FRD body frame z-axis
+,,,VehicleAngularVelocity_xyz_derivative_0,xyz_derivative_0,Float,rad/s^2,Numerical,Angular acceleration about the FRD body frame x-axis
+,,,VehicleAngularVelocity_xyz_derivative_1,xyz_derivative_1,Float,rad/s^2,Numerical,Angular acceleration about the FRD body frame y-axis
+,,,VehicleAngularVelocity_xyz_derivative_2,xyz_derivative_2,Float,rad/s^2,Numerical,Angular acceleration about the FRD body frame z-axis
 ActuatorOutputs,,,,,,,,
 ,,,timestamp,timestamp,Time,microseconds,Numerical,Time since system start
 ,,,ActuatorOutputs_noutputs,noutputs,Integer,,Categorical,Number of valid outputs
@@ -294,7 +294,7 @@ VehicleStatus,,,,,,,,
 ,,,VehicleStatus_latest_arming_reason,latest_arming_reason,Integer,,Categorical,Reason. [0: Transition to standby; 1: RC Stick; 2: RC Switch; 3: Command Internal; 4: Command External; 5: Mission Start; 6: Safety Button; 7: Auto Disarm Land; 8: Auto Disarm Preflight; 9: Kill Switch; 10: Lockdown; 11: Failure Detector; 12: Shutdown; 13: Unit Test]
 ,,,VehicleStatus_latest_disarming_reason,latest_disarming_reason,Integer,,Categorical,Reason. [0: Transition to standby; 1: RC Stick; 2: RC Switch; 3: Command Internal; 4: Command External; 5: Mission Start; 6: Safety Button; 7: Auto Disarm Land; 8: Auto Disarm Preflight; 9: Kill Switch; 10: Lockdown; 11: Failure Detector; 12: Shutdown; 13: Unit Test]
 ,,,VehicleStatus_nav_state_timestamp,nav_state_timestamp,Time,microseconds,Numerical,Time when current nav_state activated
-,,,VehicleStatus_nav_state_user_interaction,nav_state_user_interaction,Integer,,Categorical,Mode that the user selected
+,,,VehicleStatus_nav_state_user_intention,nav_state_user_intention,Integer,,Categorical,Mode that the user selected
 ,,,VehicleStatus_nav_state,nav_state,Integer,,Categorical,Currently active mode. [0: Manual; 1: Altitude control mode; 2: Position control mode; 3: Auto mission mode; 4: Auto loiter mode; 5: Auto return to land mode; 6: Position slow; 7: Free5; 8: Free4; 9: Free3; 10: Acro; 11: Free2; 12: Descend; 13: Termination; 14: Offboard; 15: Stabilised mode; 16: Free1; 17: Takeoff; 18: Land; 19: Auto follow target; 20: Precision land with landing target; 21: Orbit in a circle; 22: Auto VTOL Takeoff; 23-30: External; 31: Max]
 ,,,VehicleStatus_executor_in_charge,executor_in_charge,Integer,,Categorical,Current mode executor in change [0: Autopilot]
 ,,,VehicleStatus_valid_nav_states_mask,valid_nav_states_mask,Integer,,Categorical,Bitmask for all valid nav_state values
@@ -321,6 +321,8 @@ VehicleStatus,,,,,,,,
 ,,,VehicleStatus_usb_connected,usb_connected,Boolean,,Categorical,Set to true once telemetry is received through USB link
 ,,,VehicleStatus_open_drone_id_system_present,open_drone_id_system_present,Boolean,,Categorical,Is open drone ID system present
 ,,,VehicleStatus_open_drone_id_system_healthy,open_drone_id_system_healthy,Boolean,,Categorical,Is open drone ID system healthy
+,,,VehicleStatus_parachute_system_present,parachute_system_present,Boolean,,Categorical,Is parachute system present
+,,,VehicleStatus_parachute_system_healthy,parachute_system_healthy,Boolean,,Categorical,Is avoidance system working
 ,,,VehicleStatus_avoidance_system_required,avoidance_system_required,Boolean,,Categorical,Is avoidance system enabled
 ,,,VehicleStatus_avoidance_system_valid,avoidance_system_valid,Boolean,,Categorical,Is avoidance system working
 ,,,VehicleStatus_rc_calibration_in_progress,rc_calibration_in_progress,Boolean,,Categorical,Is RC calibration in progres
