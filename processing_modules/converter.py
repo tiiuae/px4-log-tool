@@ -3,13 +3,14 @@
 import numpy as np
 import importlib
 import os
+import re
 import pandas as pd
 import yaml
 from collections import Counter
 from copy import deepcopy
 from glob import glob
 from pyulog import ULog
-from typing import List
+from typing import List, Tuple
 
 
 def convert_ulog2csv(
@@ -125,6 +126,78 @@ def convert_ulog2csv(
                 csvfile.write("\n")
 
 
+def convert_csv2ros2bag(directory_address: str) -> None:
+    """
+    Converts CSV files to a ROS 2 bag file.
+
+    This function reads CSV files from the specified directory and converts their contents into ROS 2 messages, which are then written to a ROS 2 bag file. The CSV files should be named according to the message types and topics they represent, and the data will be serialized accordingly.
+
+    Args:
+        directory_address: Directory path containing the CSV files.
+
+    Raises:
+        ValueError: If a field in the CSV file does not match any field in the corresponding ROS message type.
+    """
+    import rosbag2_py
+    import importlib
+    import px4_msgs.msg
+    from rclpy.serialization import serialize_message
+    
+    def set_msg_field(msg, field_name, value):
+        """Set the value of a message field, handling nested fields and array indices, and ensuring type compatibility."""
+
+        if '_' in field_name and field_name.split('_')[-1].isdigit():
+            field_base = '_'.join(field_name.split('_')[:-1])
+            index = int(field_name.split('_')[-1])
+            if hasattr(msg, field_base):
+                array_field = getattr(msg, field_base)
+                if isinstance(array_field, (list, np.ndarray)):
+                    array_field[index] = type(array_field[index])(value)
+                else:
+                    raise ValueError(f"Field {field_base} is not an array in message type {type(msg).__name__}")
+        else:
+            if hasattr(msg, field_name):
+                current_type = type(getattr(msg, field_name))
+                setattr(msg, field_name, current_type(value))
+            else:
+                raise ValueError(f"Message type {type(msg).__name__} has no field {field_name}")
+
+    writer = rosbag2_py.SequentialWriter()
+    storage_options = rosbag2_py._storage.StorageOptions(
+        uri=f"{directory_address}/rosbag",
+        storage_id="sqlite3",
+    )
+    converter_options = rosbag2_py._storage.ConverterOptions("", "")
+    writer.open(storage_options, converter_options)
+
+    csv_files = [f for f in os.listdir(directory_address) if f.endswith(".csv")]
+    
+    topic_dict = {}
+    for csv_file in csv_files:
+        base_name = csv_file.split(".")[0]
+        if base_name[-1].isdigit():
+            topic_name = f"/fmu/out/{base_name[:-2]}/f_{base_name[-1]}"
+        else:
+            topic_name = f"/fmu/out/{base_name}"
+        msg_type = ''.join(part.capitalize() for part in re.sub(r'_\d+', '', base_name).split("_"))
+        topic_dict[base_name] = (topic_name, msg_type)
+        topic_info = rosbag2_py._storage.TopicMetadata(
+            name=topic_name,
+            type=f"px4_msgs/msg/{msg_type}",
+            serialization_format="cdr"
+        )
+        writer.create_topic(topic_info)
+
+    for base_name, (topic_name, msg_type) in topic_dict.items():
+        df = pd.read_csv(os.path.join(directory_address, f"{base_name}.csv"))
+        msg_class = getattr(importlib.import_module("px4_msgs.msg"), msg_type)
+        
+        for _, row in df.iterrows():
+            msg = msg_class()
+            for field in row.index:
+                set_msg_field(msg, field, row[field])
+            writer.write(topic_name, serialize_message(msg), msg.timestamp * 1000)
+
 # TODO This needs to be refactored
 def px4_mcap_to_csv(mcap_dir: str) -> None:
     """
@@ -132,8 +205,8 @@ def px4_mcap_to_csv(mcap_dir: str) -> None:
 
     Args:
         mcap_dir (str): Path to the directory containing MCAP directories.
-
     Raises:
+
         FileNotFoundError: If no MCAP files are found in the specified directory.
     """
     import px4_msgs.msg
