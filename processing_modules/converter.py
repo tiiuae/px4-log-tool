@@ -163,8 +163,9 @@ def convert_csv2ros2bag(directory_address: str) -> None:
                 raise ValueError(f"Message type {type(msg).__name__} has no field {field_name}")
 
     writer = rosbag2_py.SequentialWriter()
+    bag_name = directory_address.split("/")[-1]
     storage_options = rosbag2_py._storage.StorageOptions(
-        uri=f"{directory_address}/rosbag",
+        uri=f"{directory_address}/{bag_name}",
         storage_id="sqlite3",
     )
     converter_options = rosbag2_py._storage.ConverterOptions("", "")

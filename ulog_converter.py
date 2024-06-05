@@ -51,7 +51,7 @@ import yaml
 
 from processing_modules.resampler import resample_data
 from processing_modules.merger import merge_csv
-from processing_modules.converter import convert_ulog2csv
+from processing_modules.converter import convert_ulog2csv, convert_csv2ros2bag
 
 def resample_unified(
         unified_df: pd.DataFrame = None,
@@ -154,6 +154,13 @@ def main():
         description="Convert ULOG files inside directory to CSV"
     )
     parser.add_argument(
+        "-b",
+        "--rosbag",
+        action="count",
+        help="Convert each mission into a ROS 2 bag (sqlite / .db)",
+        default=0,
+    )
+    parser.add_argument(
         "-m",
         "--merge",
         action="count",
@@ -198,8 +205,15 @@ def main():
     filter: str = args.filter
     verbose: bool = args.verbose
     resample: bool = args.resample
+    bag: bool = args.rosbag
     merge: bool = args.merge
     clean: bool = args.clean
+
+    if bag:
+        print("")
+        print("WARNING: Since ROS2 bags are created, cleaning of output_dir is disabled")
+        print("")
+        clean = False
 
     # = File Conversion =#
 
@@ -251,6 +265,35 @@ def main():
         if verbose:
             i += 1
             progress_bar(i / total)
+
+
+    # = to bags = #
+    if bag:
+        processes = []
+        for file in ulog_files:
+            process = Process(
+                target=convert_csv2ros2bag,
+                args=(os.path.join(output_dir,os.path.join(file[0], file[1].split(".")[0])),),
+            )
+            processes.append(process)
+            process.start()
+        if verbose:
+            print("")
+            print("")
+            print(
+                "-------------------------------------------------------------------------------------"
+            )
+            print("Converting .csv files to ROS2 bags")
+            print("")
+            total = len(processes)
+            i = 0
+
+        for process in processes:
+            process.join()
+            if verbose:
+                i += 1
+                progress_bar(i / total)
+
 
     # = File Merge =#
     if not merge:
