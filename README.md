@@ -7,7 +7,7 @@ description: Includes real flights and SITL flight. Normal and anomalous.
 - [Folder Structure](#folder-structure)
 - [Data Conversion and Pre-Processing](#data-conversion-and-pre-processing)
   - [`filter.yaml`](#filteryaml)
-  - [`.ulog` --> `.csv` -- `ulog_converter.py`](#ulog-csv-ulogconverterpy)
+  - [`.ulog` --> `.csv`(`/.db3``) -- `ulog_converter.py`](#ulog-csvdb3-ulogconverterpy)
     - [Usage](#usage)
     - [Arguments](#arguments)
     - [Workflow](#workflow)
@@ -75,7 +75,7 @@ Add uorb/ros2 topics of interest into the `whitelist_messages` list.
 
 Add headers that are redundant or not required in the `blacklist_headers` list.
 
-`resample_params` contains parameters for resampling the data after it is merged. More on this is explained in [Resampling Functionality](README#resampling-functionality). Provide the target sampling frequency in Hertz at `target_frequency_hz`.
+`resample_params` contains parameters for resampling the data after it is merged. More on this is explained in [Resampling Functionality](#resampling-functionality). Provide the target sampling frequency in Hertz at `target_frequency_hz`.
 
 For the other parameters, refer to the following documentation links of the `pandas` library:
 * [`pandas.DataFrame.resample`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html)
@@ -98,7 +98,7 @@ resample_params:
     interpolate_method: "linear"
 ```
 
-## `.ulog` --> `.csv` -- `ulog_converter.py`
+## `.ulog` --> `.csv`(`/.db3``) -- `ulog_converter.py`
 
 This script provides a streamlined way to process PX4 ULog files. It offers flexibility in converting individual files or merging multiple files, filtering specific messages, and resampling data.
 
@@ -110,6 +110,9 @@ python <script_name> -h  # Display help and options
 ```bash
 python <script_name> <ulog_dir> <filter.yaml> # Only runs conversion and output into `output_dir`
 ```
+```bash
+python <script_name> <ulog_dir> <filter.yaml> -b # After conversion, convert folders into bags .db3
+
 ```bash
 python <script_name> <ulog_dir> <filter.yaml> -o <custom_output_dir> # Runs conversion and output in custom_output_dir
 ```
@@ -124,12 +127,13 @@ python <script_name> <ulog_dir> <filter.yaml> -o <output_dir> -m # Merges CSV fi
 * -o, --output_dir (str): Output directory for converted CSV files (default: 'output_dir').
 * -m, --merge: Merge CSV files within each subdirectory into 'merged.csv' files.
 * -r, --resample: Resample 'merged.csv' files based on parameters in 'filter.yaml'.
+* -b, --rosbag: Convert each mission into a ROS 2 bag (sqlite / .db).
 * -c, --clean: Clean up intermediate files, leaving only 'unified.csv'.
 * -v, --verbose: Enable verbose logging.
 
 ### Workflow
 
-1. **File Conversion:** Converts ULog files in the specified directory to individual CSV files, applying filters from the YAML file.
+1. **File Conversion:** Converts ULog files in the specified directory to individual CSV files and .db3 ROS 2 Bag files, applying filters from the YAML file.
 2. **File Merging (Optional):** If the `-m` flag is set, merges CSV files within each subdirectory into a single 'merged.csv'.
 3. **File Unification (Optional):** Combines all 'merged.csv' files into a single 'unified.csv' file.
 4. **Cleanup (Optional):** If the `-c` flag is set, removes intermediate files and directories, leaving only 'unified.csv'.
@@ -148,4 +152,6 @@ Note that you NEED to have a 'filter.yaml' file with the provided params or else
 
 An example of resampling is shown below for the 'SensorCombined' topic for the gyroscope readings, with default resampling params.
 
-![Unsampled](./assets/unsampled.png) ![Sampled at 10Hz](./assets/sampled_10hz.png)
+
+![Unsampled](./assets/unsampled.png)
+![Sampled at 10Hz](./assets/sampled_10hz.png)

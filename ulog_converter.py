@@ -10,6 +10,7 @@ This script provides a streamlined way to process PX4 ULog files. It offers flex
   -o, --output_dir (str): Output directory for converted CSV files (default: 'output_dir').
   -m, --merge: Merge CSV files within each subdirectory into 'merged.csv' files.
   -r, --resample: Resample 'merged.csv' files based on parameters in 'filter.yaml'.
+  -b, --rosbag: Convert each mission into a ROS 2 bag (sqlite / .db).
   -c, --clean: Clean up intermediate files, leaving only 'unified.csv'.
   -v, --verbose: Enable verbose logging.
 
@@ -32,7 +33,7 @@ resample_params:
 
 **Workflow**
 
-1. **File Conversion:** Converts ULog files in the specified directory to individual CSV files, applying filters from the YAML file.
+1. **File Conversion:** Converts ULog files in the specified directory to individual CSV files and .db3 ROS 2 Bag files, applying filters from the YAML file.
 2. **File Merging (Optional):** If the `-m` flag is set, merges CSV files within each subdirectory into a single 'merged.csv'.
 3. **File Unification (Optional):** Combines all 'merged.csv' files into a single 'unified.csv' file.
 4. **Cleanup (Optional):** If the `-c` flag is set, removes intermediate files and directories, leaving only 'unified.csv'.
