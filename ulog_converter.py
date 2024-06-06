@@ -10,6 +10,7 @@ This script provides a streamlined way to process PX4 ULog files. It offers flex
   -o, --output_dir (str): Output directory for converted CSV files (default: 'output_dir').
   -m, --merge: Merge CSV files within each subdirectory into 'merged.csv' files.
   -r, --resample: Resample 'merged.csv' files based on parameters in 'filter.yaml'.
+  -b, --rosbag: Convert each mission into a ROS 2 bag (sqlite / .db).
   -c, --clean: Clean up intermediate files, leaving only 'unified.csv'.
   -v, --verbose: Enable verbose logging.
 
@@ -32,7 +33,7 @@ resample_params:
 
 **Workflow**
 
-1. **File Conversion:** Converts ULog files in the specified directory to individual CSV files, applying filters from the YAML file.
+1. **File Conversion:** Converts ULog files in the specified directory to individual CSV files and .db3 ROS 2 Bag files, applying filters from the YAML file.
 2. **File Merging (Optional):** If the `-m` flag is set, merges CSV files within each subdirectory into a single 'merged.csv'.
 3. **File Unification (Optional):** Combines all 'merged.csv' files into a single 'unified.csv' file.
 4. **Cleanup (Optional):** If the `-c` flag is set, removes intermediate files and directories, leaving only 'unified.csv'.
@@ -51,7 +52,7 @@ import yaml
 
 from processing_modules.resampler import resample_data
 from processing_modules.merger import merge_csv
-from processing_modules.converter import convert_ulog2csv
+from processing_modules.converter import convert_ulog2csv, convert_csv2ros2bag
 
 def resample_unified(
         unified_df: pd.DataFrame = None,
@@ -154,6 +155,13 @@ def main():
         description="Convert ULOG files inside directory to CSV"
     )
     parser.add_argument(
+        "-b",
+        "--rosbag",
+        action="count",
+        help="Convert each mission into a ROS 2 bag (sqlite / .db)",
+        default=0,
+    )
+    parser.add_argument(
         "-m",
         "--merge",
         action="count",
@@ -198,8 +206,15 @@ def main():
     filter: str = args.filter
     verbose: bool = args.verbose
     resample: bool = args.resample
+    rosbag: bool = args.rosbag
     merge: bool = args.merge
     clean: bool = args.clean
+
+    if rosbag:
+        print("")
+        print("WARNING: Since ROS2 bags are created, cleaning of output_dir is disabled")
+        print("")
+        clean = False
 
     # = File Conversion =#
 
@@ -227,6 +242,11 @@ def main():
 
     processes = []
     for file in ulog_files:
+        try:
+            import px4_msgs.msg
+        except ImportError:
+            print("Error: px4_msgs package not found.")
+            break
         process = Process(
             target=convert_ulog2csv,
             args=(
@@ -251,6 +271,38 @@ def main():
         if verbose:
             i += 1
             progress_bar(i / total)
+
+
+    # = to bags = #
+    if rosbag:
+        processes = []
+        for file in ulog_files:
+            process = Process(
+                target=convert_csv2ros2bag,
+                args=(os.path.join(output_dir,os.path.join(file[0], file[1].split(".")[0])),),
+            )
+            processes.append(process)
+            process.start()
+        if verbose:
+            print("")
+            print("")
+            print(
+                "-------------------------------------------------------------------------------------"
+            )
+            print("Converting .csv files to ROS2 bags")
+            print("")
+            total = len(processes)
+            i = 0
+            progress_bar(i / total)
+            print("")
+
+
+        for process in processes:
+            process.join()
+            if verbose:
+                i += 1
+                progress_bar(i / total)
+
 
     # = File Merge =#
     if not merge:
