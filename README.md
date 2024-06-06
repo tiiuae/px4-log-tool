@@ -98,7 +98,7 @@ resample_params:
     interpolate_method: "linear"
 ```
 
-## `.ulog` --> `.csv`(`/.db3``) -- `ulog_converter.py`
+## `.ulog` --> `.csv`(`/.db3`) -- `ulog_converter.py`
 
 This script provides a streamlined way to process PX4 ULog files. It offers flexibility in converting individual files or merging multiple files, filtering specific messages, and resampling data.
 
