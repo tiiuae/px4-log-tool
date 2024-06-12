@@ -212,8 +212,15 @@ def main():
 
     if rosbag:
         print("")
-        print("WARNING: Since ROS2 bags are created, cleaning of output_dir is disabled")
+        print("WARNING: Since ROS2 bags are created:")
+        print("--> cleaning of output_dir is disabled")
+        print("--> merging of .csv files is disabled")
         print("")
+        try:
+            import px4_msgs.msg
+        except ImportError:
+            print("ERROR: px4_msgs package not found.")
+            return
         clean = False
 
     # = File Conversion =#
@@ -242,11 +249,6 @@ def main():
 
     processes = []
     for file in ulog_files:
-        try:
-            import px4_msgs.msg
-        except ImportError:
-            print("Error: px4_msgs package not found.")
-            break
         process = Process(
             target=convert_ulog2csv,
             args=(
@@ -305,7 +307,7 @@ def main():
 
 
     # = File Merge =#
-    if not merge:
+    if not merge or rosbag:
         return
 
     if verbose:
