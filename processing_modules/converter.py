@@ -128,7 +128,8 @@ def convert_ulog2csv(
 
 def convert_csv2ros2bag(
     directory_address: str,
-    topic_prefix: str = "/fmu/out"
+    topic_prefix: str = "/fmu/out",
+    capitalise_topics: bool = False
     ) -> None:
     """
     Converts CSV files to a ROS 2 bag file.
@@ -202,7 +203,12 @@ def convert_csv2ros2bag(
 
     topic_dict = {}
     for csv_file in csv_files:
-        base_name = csv_file.split(".")[0]
+        base_name: str = csv_file.split(".")[0]
+        if capitalise_topics:
+            name = base_name.split("_")
+            for comp in name:
+                comp = comp.capitalize()
+            base_name = "".join(name)
         if base_name[-1].isdigit():
             topic_name = f"{topic_prefix}/{base_name[:-2]}/f_{base_name[-1]}"
         else:

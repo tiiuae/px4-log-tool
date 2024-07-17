@@ -281,7 +281,7 @@ def main():
         for file in ulog_files:
             process = Process(
                 target=convert_csv2ros2bag,
-                args=(os.path.join(output_dir,os.path.join(file[0], file[1].split(".")[0])),),
+                args=(os.path.join(output_dir,os.path.join(file[0], file[1].split(".")[0])), "/fmu/out", True),
             )
             processes.append(process)
             process.start()
