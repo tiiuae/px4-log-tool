@@ -204,15 +204,13 @@ def convert_csv2ros2bag(
     topic_dict = {}
     for csv_file in csv_files:
         base_name: str = csv_file.split(".")[0]
+        name = base_name
         if capitalise_topics:
-            name = base_name.split("_")
-            for comp in name:
-                comp = comp.capitalize()
-            base_name = "".join(name)
+            name = "".join([comp.capitalize() for comp in base_name.split("_")])
         if base_name[-1].isdigit():
-            topic_name = f"{topic_prefix}/{base_name[:-2]}/f_{base_name[-1]}"
+            topic_name = f"{topic_prefix}/{name[:-2]}/f_{base_name[-1]}"
         else:
-            topic_name = f"{topic_prefix}/{base_name}"
+            topic_name = f"{topic_prefix}/{name}"
         msg_type = ''.join(part.capitalize() for part in re.sub(r'_\d+', '', base_name).split("_"))
         topic_dict[base_name] = (topic_name, msg_type)
         topic_info = rosbag2_py._storage.TopicMetadata(
