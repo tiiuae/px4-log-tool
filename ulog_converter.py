@@ -45,19 +45,20 @@ import shutil
 import sys
 from copy import deepcopy
 from multiprocessing import Process
-from typing import Dict, Any
+from typing import Any, Dict
 
 import pandas as pd
 import yaml
 
-from processing_modules.resampler import resample_data
+from processing_modules.converter import convert_csv2ros2bag, convert_ulog2csv
 from processing_modules.merger import merge_csv
-from processing_modules.converter import convert_ulog2csv, convert_csv2ros2bag
+from processing_modules.resampler import resample_data
+
 
 def resample_unified(
-        unified_df: pd.DataFrame = None,
-        msg_reference: pd.DataFrame = None,
-        resample_params: Dict[str, Any] = None,
+        unified_df: pd.DataFrame,
+        msg_reference: pd.DataFrame,
+        resample_params: Dict[str, Any],
         verbose: bool = False,
 ) -> pd.DataFrame:
     """
@@ -217,7 +218,7 @@ def main():
         print("--> merging of .csv files is disabled")
         print("")
         try:
-            import px4_msgs.msg
+            import px4_msgs.msg  # noqa: F401
         except ImportError:
             print("ERROR: px4_msgs package not found.")
             return
@@ -262,12 +263,11 @@ def main():
         processes.append(process)
         process.start()
 
+    i = 0
+    total = len(processes)
     if verbose:
         print("")
         print("Conversion Progress:")
-        total = len(processes)
-        i = 0
-
     for process in processes:
         process.join()
         if verbose:
@@ -338,10 +338,10 @@ def main():
         processes.append(process)
         process.start()
 
+    i = 0
+    total = len(processes)
     if verbose:
         print("Merging Progress:")
-        total = len(processes)
-        i = 0
     for process in processes:
         process.join()
         if verbose:
