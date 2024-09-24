@@ -14,7 +14,8 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "srta-drone-dataset=srta_drone_dataset.cli:main",
+            # "srta-drone-dataset=srta_drone_dataset.cli:main",
+            "srta-drone-dataset=srta_drone_dataset.cli:cli",
         ],
     },
     classifiers=[
