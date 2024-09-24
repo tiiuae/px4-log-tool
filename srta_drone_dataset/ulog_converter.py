@@ -50,9 +50,9 @@ from typing import Any, Dict
 import pandas as pd
 import yaml
 
-from processing_modules.converter import convert_csv2ros2bag, convert_ulog2csv
-from processing_modules.merger import merge_csv
-from processing_modules.resampler import resample_data
+from srta_drone_dataset.processing_modules.converter import convert_csv2ros2bag, convert_ulog2csv
+from srta_drone_dataset.processing_modules.merger import merge_csv
+from srta_drone_dataset.processing_modules.resampler import resample_data
 
 
 def resample_unified(
@@ -151,7 +151,7 @@ def progress_bar(progress: float) -> None:
     sys.stdout.flush()
 
 
-def main():
+def ulog_converter():
     parser = argparse.ArgumentParser(
         description="Convert ULOG files inside directory to CSV"
     )

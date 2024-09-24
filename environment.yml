@@ -1,0 +1,5 @@
+name: srta-drone-dataset
+channels:
+  - defaults
+dependencies:
+  - python
