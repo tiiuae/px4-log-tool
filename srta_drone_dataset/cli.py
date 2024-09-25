@@ -1,30 +1,109 @@
 import click
-from srta_drone_dataset.ulog_converter import ulog_converter
+from srta_drone_dataset.ulog_converter import ulog_csv
+
+
+# Context object to store verbose flag
+class CLIContext:
+    def __init__(self):
+        self.verbose: bool = False
+
 
 @click.group()
-def cli():
+@click.option("--verbose", is_flag=True, help="Enable verbose output.")
+@click.pass_context
+def cli(ctx, verbose):
     """
     srta-drone-dataset CLI Tool
     """
+    ctx.ensure_object(CLIContext)
+    ctx.obj.verbose = verbose
+
 
 @click.command()
-@click.argument('directory_address', type=click.Path(exists=True))
-@click.option('-i', '--input-format', required=True, type=click.Choice(['ulog', 'db3'], case_sensitive=False), help='Input file format.')
-@click.option('-o', '--output-format', required=True, type=click.Choice(['csv', 'db3'], case_sensitive=False), help='Output file format.')
-@click.option('-f', '--filter', type=click.Path(exists=True), required=True, help='Path to the filter YAML file.')
-def convert(directory_address, input_format, output_format, filter):
+@click.argument("directory_address", type=click.Path(exists=True))
+@click.option(
+    "-r",
+    "--resample",
+    is_flag=True,
+    help="Resample data to a given frequency (filter.yaml is mandatory)",
+)
+@click.option(
+    "-c",
+    "--clean",
+    is_flag=True,
+    help="Cleans directory and breadcrumbs leaving only unified.csv",
+)
+@click.option(
+    "-m",
+    "--merge",
+    is_flag=True,
+    help="Merge .csv files per .ulog files into merged.csv [leaves breadcrumbs].",
+)
+@click.option(
+    "-f",
+    "--filter",
+    type=click.Path(exists=True),
+    help="Path to the filter YAML file.",
+)
+@click.option(
+    "-o",
+    "--output_dir",
+    type=click.Path(exists=False),
+    help="Module creates mirror directory tree of one with ULOGs with the CSV files in corresponding locations",
+)
+@click.pass_context
+def ulog2csv(ctx, directory_address, resample, clean, merge, filter, output_dir):
     """
-    Convert drone dataset in the DIRECTORY_ADDRESS from INPUT format to OUTPUT format using FILTER file.
+    Convert ulog files to CSV in DIRECTORY_ADDRESS using FILTER.
     """
-    click.echo(f"Converting dataset in {directory_address}")
-    click.echo(f"Input format: {input_format}")
-    click.echo(f"Output format: {output_format}")
-    click.echo(f"Using filter: {filter}")
+    if ctx.obj.verbose:
+        click.echo("Verbose mode enabled.")
+    ulog_csv(ctx.obj.verbose, 
+             directory_address, 
+             filter, 
+             output_dir, 
+             merge, 
+             clean, 
+             resample)
 
-def main():
-    # ulog_converter()
-    return
+@click.command()
+@click.argument("directory_address", type=click.Path(exists=True))
+@click.option(
+    "-f",
+    "--filter",
+    type=click.Path(exists=True),
+    help="Path to the filter YAML file.",
+)
+@click.pass_context
+def ulog2db3(ctx, directory_address, filter):
+    """
+    Convert ulog files to DB3 in DIRECTORY_ADDRESS using FILTER.
+    """
+    if ctx.obj.verbose:
+        click.echo("Verbose mode enabled.")
 
-cli.add_command(convert)
-if __name__ == '__main__':
+
+@click.command()
+@click.argument("directory_address", type=click.Path(exists=True))
+@click.option(
+    "-f",
+    "--filter",
+    type=click.Path(exists=True),
+    help="Path to the filter YAML file.",
+)
+@click.pass_context
+def db32csv(ctx, directory_address, filter):
+    """
+    Convert DB3 files to CSV in DIRECTORY_ADDRESS using FILTER.
+    """
+    if ctx.obj.verbose:
+        click.echo("Verbose mode enabled.")
+    click.echo(f"Converting DB3 to CSV in {directory_address} using filter: {filter}")
+
+# Adding commands to the CLI
+cli.add_command(ulog2csv)
+cli.add_command(ulog2db3)
+cli.add_command(db32csv)
+
+if __name__ == "__main__":
     cli()
