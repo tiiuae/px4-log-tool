@@ -1,0 +1,7 @@
+assets/
+examples/
+tests/
+.git/
+.idea/
+./pytest_cache/
+.gitignore
