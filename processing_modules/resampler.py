@@ -2,10 +2,11 @@ import pandas as pd
 import warnings
 from typing import List
 
+
 def resample_data(
         df: pd.DataFrame,
         target_frequency_hz: float,
-        num_method: str = "mean",
+        num_method: str = "ffill",
         cat_method: str = "last",
         interpolate_numerical: bool = True,
         interpolate_method: str = "linear",
@@ -24,8 +25,9 @@ def resample_data(
         df: The DataFrame containing the data to resample. The DataFrame must have a
             'timestamp' column with datetime values.
         target_frequency_hz: The target resampling frequency in Hz.
-        num_method: The method to use for downsampling numerical data ('mean', 'median', 'max', 'min', 'sum'). This is only applied if `interpolate_numerical = False`
-            Defaults to 'mean'.
+        num_method: The method to use for numerical data ('mean', 'median', 'max', 'min', 'sum', 'ffill', 'bfill'). This is
+        only applied if `interpolate_numerical = False`
+            Defaults to 'ffill'.
         cat_method: The method to use for downsampling categorical data ('ffill', 'bfill', 'mode').
             Defaults to 'last'.
         interpolate_numerical: Whether to interpolate numerical data after resampling. Defaults to False.
@@ -71,7 +73,7 @@ def resample_data(
     if interpolate_numerical:
         df_num = df_num.interpolate(method=interpolate_method)
     else:
-        df_num = df_num.apply(lambda x: x.resample(pandas_freq).agg(num_method))
+        df_num = df_num.fillna(df_num.ffill() if num_method == 'ffill' else df_num.bfill() if num_method == 'bfill' else getattr(df_num, num_method)())
 
     # Apply specific methods for categorical data
     df_cat = df_resampled[cat_columns]
@@ -134,4 +136,3 @@ def print_column_frequencies(df):
     print(f"Overall mean frequency of DataFrame: {overall_mean_frequency} Hz")
 
     return frequency_dict
-
