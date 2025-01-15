@@ -16,12 +16,12 @@ from typing import List
 def convert_ulog2csv(
     directory_address: str,
     ulog_file_name: str,
-    messages: List[str] = None,
+    messages: List[str] | None = None,
     output: str = ".",
-    blacklist: List[str] = None,
+    blacklist: List[str] = [],
     delimiter: str = ",",
-    time_s: float = None,
-    time_e: float = None,
+    time_s: float | None = None,
+    time_e: float | None = None,
     disable_str_exceptions: bool = False,
     ) -> None:
     """
@@ -64,7 +64,7 @@ def convert_ulog2csv(
         pass
 
     # Mark duplicated
-    if messages != None:
+    if messages is not None:
         counts = Counter(
             [d.name.replace("/", "_") for d in data if d.name.replace("/", "_") in messages]
         )
@@ -296,7 +296,7 @@ def px4_mcap_to_csv(mcap_dir: str) -> None:
                 current_line = current_line.replace("]", "")
                 current_line = current_line.replace(", ", ",")
                 msg_csvstr[msg_class] += current_line
-            except:
+            except Exception as _:
                 continue
 
         for key in list(msg_csvstr.keys()):
