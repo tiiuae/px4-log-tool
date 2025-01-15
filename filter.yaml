@@ -1,27 +1,12 @@
 whitelist_messages:
-  # - "sensor_accel"
-  # - "sensor_gyro"
-  # - "sensor_mag"
-  # - "sensor_baro"
-  # - "sensor_gps"
-  # - "vehicle_local_position"
-  # - "vehicle_odometry"
-  - "vehicle_global_position"
-  # - "vehicle_attitude"
-  # - "vehicle_acceleration"
-  # - "vehicle_angular_velocity"
-  # - "actuator_outputs"
-  # - "battery_status"
-  # - "power_monitor"
-  # - "vehicle_status"
-  # - "rpm"
-  # - "sensor_combined"
+   - "sensor_combined"
+   - "actuator_outputs"
 blacklist_headers:
   - "timestamp_sample"
   - "device_id"
   - "error_count"
 resample_params:
-  target_frequency_hz: 1
+  target_frequency_hz: 100
   num_method: 'mean'
   cat_method: 'bfill'
   interpolate_numerical: True

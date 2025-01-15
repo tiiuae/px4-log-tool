@@ -159,6 +159,14 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 dataset/
+dataset_latest_data/
+dataset_mine/
+dataset_sam/
+dataset_summit/
+examples/data_examples/*
+!examples/data_examples/BateryStatusWholeSet.csv
+!examples/data_examples/BatteryBaro.csv
+!examples/data_examples/TakeOffVsMovement.csv
 data/
 hardware/
 simulation/

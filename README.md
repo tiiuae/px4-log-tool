@@ -3,67 +3,70 @@ title: Drone Flight Dataset
 description: Includes real flights and SITL flight. Normal and anomalous.
 ---
 
+
 <!--toc:start-->
+
 - [Folder Structure](#folder-structure)
 - [Data Conversion and Pre-Processing](#data-conversion-and-pre-processing)
-  - [`filter.yaml`](#filteryaml)
-  - [`.ulog` --> `.csv`(`/.db3``) -- `ulog_converter.py`](#ulog-csvdb3-ulogconverterpy)
-    - [Usage](#usage)
-    - [Arguments](#arguments)
-    - [Workflow](#workflow)
-    - [Resampling Functionality](#resampling-functionality)
+    - [`filter.yaml`](#filteryaml)
+    - [`.ulog` --> `.csv`(`/.db3``) -- `ulog_converter.py`](#ulog-csvdb3-ulogconverterpy)
+        - [Usage](#usage)
+        - [Arguments](#arguments)
+        - [Workflow](#workflow)
+        - [Resampling Functionality](#resampling-functionality)
+
 <!--toc:end-->
 
 # Folder Structure
 
 📂 Data  
 ├─ 📂 hardware  
-│  ├─ 📂 normal  
-│  │  ├─ 📂 autonomous                                                                         
-│  │  │  ├─ 📂 different_paths  
-│  │  │  │  ├─ ❓ README.md  
-│  │  │  │  ├─ 💾 `different_paths_0.ulog`  
-│  │  │  │  └─ 💾 `<...>.ulog`    
-│  │  │  │    
-│  │  │  ├─ 📂 different_terrains  
-│  │  │  │  ├─ ❓ README.md   
-│  │  │  │  ├─ 💾 `different_terrains_0.ulog`  
-│  │  │  │  └─ 💾 `<...>.ulog`    
-│  │  │  │    
-│  │  │  └─ 📂 linear_paths  
-│  │  │     ├─ ❓ README.md   
-│  │  │     ├─ 💾 `linear_paths_0.ulog`  
-│  │  │     └─ 💾 `<...>.ulog`    
-│  │  │  
-│  │  ├─ 📂 gimbal_camera_video  
-│  │  │  ├─ 📂 natsbags  
-│  │  │  │  ├─ 💾 `different_paths_0.gz`  
-│  │  │  │  └─ 💾 `<...>.gz`    
-│  │  │  │    
-│  │  │  └─ 📂 videos  
-│  │  │     ├─ 💾 `different_paths_0.mp4`  
-│  │  │     └─ 💾 `<...>.mp4`    
-│  │  │  
-│  │  └─ 📂 manual  
-│  │     ├─ 📂 fast_movements  
-│  │     │    ├─ ❓ README.md   
-│  │     │    ├─ 💾 `fast_movements_0.ulog`  
-│  │     │    └─ 💾 `<...>.ulog`    
-│  │     │  
-│  │     └─ 📂 takeoff_land  
-│  │        ├─ ❓ README.md  
-│  │        ├─ 💾 `takeoff_land_0.ulog`  
-│  │        └─ 💾 `<...>.ulog`  
-│  │  
-│  └─ 📂 non_normal  
+│ ├─ 📂 normal  
+│ │ ├─ 📂 autonomous                                                                         
+│ │ │ ├─ 📂 different_paths  
+│ │ │ │ ├─ ❓ README.md  
+│ │ │ │ ├─ 💾 `different_paths_0.ulog`  
+│ │ │ │ └─ 💾 `<...>.ulog`    
+│ │ │ │    
+│ │ │ ├─ 📂 different_terrains  
+│ │ │ │ ├─ ❓ README.md   
+│ │ │ │ ├─ 💾 `different_terrains_0.ulog`  
+│ │ │ │ └─ 💾 `<...>.ulog`    
+│ │ │ │    
+│ │ │ └─ 📂 linear_paths  
+│ │ │ ├─ ❓ README.md   
+│ │ │ ├─ 💾 `linear_paths_0.ulog`  
+│ │ │ └─ 💾 `<...>.ulog`    
+│ │ │  
+│ │ ├─ 📂 gimbal_camera_video  
+│ │ │ ├─ 📂 natsbags  
+│ │ │ │ ├─ 💾 `different_paths_0.gz`  
+│ │ │ │ └─ 💾 `<...>.gz`    
+│ │ │ │    
+│ │ │ └─ 📂 videos  
+│ │ │ ├─ 💾 `different_paths_0.mp4`  
+│ │ │ └─ 💾 `<...>.mp4`    
+│ │ │  
+│ │ └─ 📂 manual  
+│ │ ├─ 📂 fast_movements  
+│ │ │ ├─ ❓ README.md   
+│ │ │ ├─ 💾 `fast_movements_0.ulog`  
+│ │ │ └─ 💾 `<...>.ulog`    
+│ │ │  
+│ │ └─ 📂 takeoff_land  
+│ │ ├─ ❓ README.md  
+│ │ ├─ 💾 `takeoff_land_0.ulog`  
+│ │ └─ 💾 `<...>.ulog`  
+│ │  
+│ └─ 📂 non_normal  
 │  
 ├─ 📂 simulation  
-│  ├─ 📂 faulty  
-│  └─ 📂 normal  
+│ ├─ 📂 faulty  
+│ └─ 📂 normal  
 │     
 ├─ `filter.yaml`  
 ├─ ❓ `README.md`  
-└─ 🐍 `ulog_converter.py`  
+└─ 🐍 `ulog_converter.py`
 
 # Data Conversion and Pre-Processing
 
@@ -75,47 +78,53 @@ Add uorb/ros2 topics of interest into the `whitelist_messages` list.
 
 Add headers that are redundant or not required in the `blacklist_headers` list.
 
-`resample_params` contains parameters for resampling the data after it is merged. More on this is explained in [Resampling Functionality](#resampling-functionality). Provide the target sampling frequency in Hertz at `target_frequency_hz`.
+`resample_params` contains parameters for resampling the data after it is merged. More on this is explained in [Resampling Functionality](#resampling-functionality). Provide
+the target sampling frequency in Hertz at `target_frequency_hz`.
 
 For the other parameters, refer to the following documentation links of the `pandas` library:
+
 * [`pandas.DataFrame.resample`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html)
 * [`pandas.DataFrame.agg`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.agg.html)
 * [`pandas.DataFrame.interpolate`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html)
 
 ```yaml
 whitelist_messages:
-    - sensor_combined
-    - vehicle_attitude
-    - ... (other message names)
+  - sensor_combined
+  - vehicle_attitude
+  - ... (other message names)
 blacklist_headers:
-    - timestamp
-    - ... (other field names)
+  - timestamp
+  - ... (other field names)
 resample_params:
-    target_frequency_hz: 10
-    num_method: "mean"
-    cat_method: "ffill"
-    interpolate_numerical: True
-    interpolate_method: "linear"
+  target_frequency_hz: 10
+  num_method: "mean"
+  cat_method: "ffill"
+  interpolate_numerical: True
+  interpolate_method: "linear"
 ```
 
 ## `.ulog` --> `.csv`(`/.db3`) -- `ulog_converter.py`
 
-This script provides a streamlined way to process PX4 ULog files. It offers flexibility in converting individual files or merging multiple files, filtering specific messages, and resampling data.
+This script provides a streamlined way to process PX4 ULog files. It offers flexibility in converting individual files or merging multiple files, filtering specific messages,
+and resampling data.
 
 ### Usage
 
 ```bash
 python <script_name> -h  # Display help and options
 ```
+
 ```bash
 python <script_name> <ulog_dir> <filter.yaml> # Only runs conversion and output into `output_dir`
 ```
+
 ```bash
 python <script_name> <ulog_dir> <filter.yaml> -b # After conversion, convert folders into bags .db3
 
 ```bash
 python <script_name> <ulog_dir> <filter.yaml> -o <custom_output_dir> # Runs conversion and output in custom_output_dir
 ```
+
 ```bash
 python <script_name> <ulog_dir> <filter.yaml> -o <output_dir> -m # Merges CSV files into a unified.csv file
 ```
@@ -151,7 +160,6 @@ python <script_name> <ulog_dir> <filter.yaml> -o <output_dir> -m -r # Resamples 
 Note that you NEED to have a 'filter.yaml' file with the provided params or else it will default to the parameters defined above.
 
 An example of resampling is shown below for the 'SensorCombined' topic for the gyroscope readings, with default resampling params.
-
 
 ![Unsampled](./assets/unsampled.png)
 ![Sampled at 10Hz](./assets/sampled_10hz.png)
