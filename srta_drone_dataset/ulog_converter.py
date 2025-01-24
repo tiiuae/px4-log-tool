@@ -42,10 +42,11 @@ resample_params:
 import argparse
 import os
 import shutil
-import sys
 from copy import deepcopy
 from multiprocessing import Process
 from typing import Any, Dict
+from srta_drone_dataset.util.logger import log
+from srta_drone_dataset.util.tui import progress_bar
 
 import pandas as pd
 import yaml
@@ -140,21 +141,6 @@ def resample_unified(
             progress_bar(i / len(mission_names))
 
     return resampled_df
-
-
-def progress_bar(progress: float) -> None:
-    """
-    Displays a simple progress bar in the console.
-
-    Args:
-        progress: A float between 0.0 and 1.0 representing the progress percentage.
-    """
-
-    bar_length = 50
-    filled_length = int(bar_length * progress)
-    bar = f"[{'=' * filled_length}{' ' * (bar_length - filled_length)}]"
-    sys.stdout.write(f"\r{bar} {progress * 100:.1f}%")
-    sys.stdout.flush()
 
 
 def ulog_converter():
@@ -455,21 +441,20 @@ def ulog_csv(
             if file.split(".")[-1] == "ulg" or file.split(".")[-1] == "ulog":
                 ulog_files.append((root, file))
 
-    if verbose:
-        print(f"Converting [{len(ulog_files)}] .ulog files to .csv.")
-        print("")
+    log(msg=f"Converting [{len(ulog_files)}] .ulog files to .csv.", verbosity=verbose, log_level=0)
+    log(msg="", verbosity=verbose, log_level=0)
 
     with open(filter, "r") as f:
         data = yaml.safe_load(f)
 
     if verbose:
-        print("Whitelisted topics are:")
+        log("Whitelisted topics are:", verbosity=verbose, log_level=0)
         for entry in data["whitelist_messages"]:
-            print(f" - {entry}")
-        print("")
-        print("Blacklisted headers are:")
+            log(f" - {entry}", verbosity=verbose, log_level=0)
+        log("")
+        log("Blacklisted headers are:", verbosity=verbose, log_level=0)
         for entry in data["blacklist_headers"]:
-            print(f" - {entry}")
+            log(f" - {entry}", verbosity=verbose, log_level=0)
 
     processes = []
     for file in ulog_files:
@@ -481,6 +466,11 @@ def ulog_csv(
                 data["whitelist_messages"],
                 os.path.join(output_dir, file[0]),
                 data["blacklist_headers"],
+                ",",
+                None,
+                None,
+                False,
+                verbose
             ),
         )
         processes.append(process)
@@ -489,8 +479,8 @@ def ulog_csv(
     i = 0
     total = len(processes)
     if verbose:
-        print("")
-        print("Conversion Progress:")
+        log("", verbosity=verbose, log_level=0)
+        log("Conversion Progress:", verbosity=verbose, log_level=0)
     for process in processes:
         process.join()
         if verbose:
@@ -502,11 +492,11 @@ def ulog_csv(
         return
 
     if verbose:
-        print("")
-        print("")
-        print(84 * "-")
-        print("Merging .csv files -- Breadcrumbs will be created as merged.csv.")
-        print("")
+        log("", verbosity=verbose, log_level=0)
+        log("", verbosity=verbose, log_level=0)
+        log(84 * "-", verbosity=verbose, log_level=0)
+        log("Merging .csv files -- Breadcrumbs will be created as merged.csv.", verbosity=verbose, log_level=0)
+        log("", verbosity=verbose, log_level=0)
 
     csv_files = []
     for root, _, files in os.walk(output_dir):
@@ -514,8 +504,8 @@ def ulog_csv(
             csv_files.append((root, files))
 
     if verbose:
-        print(f"Merging into [{len(csv_files)}] .csv files.")
-        print("")
+        log(f"Merging into [{len(csv_files)}] .csv files.", verbosity=verbose, log_level=0)
+        log("", verbosity=verbose, log_level=0)
 
     processes = []
 
@@ -530,7 +520,7 @@ def ulog_csv(
     i = 0
     total = len(processes)
     if verbose:
-        print("Merging Progress:")
+        log("Merging Progress:", verbosity=verbose, log_level=0)
     for process in processes:
         process.join()
         if verbose:
@@ -544,13 +534,12 @@ def ulog_csv(
         if "merged.csv" in files:
             merge_files.append(root)
 
-    if verbose:
-        print("")
-        print("")
-        print(84 * "-")
-        print(
-            "Unifying all 'merged.csv' files into a single 'unified.csv' -- This may take a while."
-        )
+    log("", verbosity=verbose, log_level=0)
+    log("", verbosity=verbose, log_level=0)
+    log(84 * "-", verbosity=verbose, log_level=0)
+    log(
+        "Unifying all 'merged.csv' files into a single 'unified.csv' -- This may take a while."
+    , verbosity=verbose, log_level=0)
 
     unified_df = pd.concat(
         [pd.read_csv(os.path.join(file, "merged.csv")) for file in merge_files]
@@ -558,23 +547,23 @@ def ulog_csv(
 
     msg_reference = None
     if resample:
-        print("")
-        print("")
-        print(84 * "-")
-        print("Resampling `unified.csv`.")
+        log("", verbosity=verbose, log_level=0)
+        log("", verbosity=verbose, log_level=0)
+        log(84 * "-", verbosity=verbose, log_level=0)
+        log("Resampling `unified.csv`.", verbosity=verbose, log_level=0)
         try:
             msg_reference = pd.read_csv(os.path.join(os.getcwd(), "msg_reference.csv"))
         except FileNotFoundError:
-            print("Error: msg_reference.csv not found.")
-            print(
+            log("Error: msg_reference.csv not found.", verbosity=verbose, log_level=2)
+            log(
                 "Case 1 -- Ensure that the msg_reference.csv file is present in the directory this script is being run from."
-            )
-            print(
+            , verbosity=verbose, log_level=2)
+            log(
                 "Case 2 -- Please restore this repository or download this file from the source."
-            )
-            print(
+            , verbosity=verbose, log_level=2)
+            log(
                 "Case 3 -- If resampling is not desired, please remove the resample flag from the command line."
-            )
+            , verbosity=verbose, log_level=2)
             return
 
         try:
@@ -584,9 +573,9 @@ def ulog_csv(
             _ = data["resample_params"]["interpolate_numerical"]
             _ = data["resample_params"]["interpolate_method"]
         except KeyError:
-            print("Warning: Incomplete resampling parameters provided in filter.yaml.")
-            print("Using default values.")
-            print("")
+            log("Warning: Incomplete resampling parameters provided in filter.yaml.", verbosity=verbose, log_level=1)
+            log("Using default values.", verbosity=verbose, log_level=1)
+            log("", verbosity=verbose, log_level=1)
             data["resample_params"] = {
                 "target_frequency_hz": 10,
                 "num_method": "mean",
@@ -595,20 +584,19 @@ def ulog_csv(
                 "interpolate_method": "linear",
             }
 
-        if verbose:
-            print("Resampling parameters:")
-            print(
-                f"-- target_frequency_hz: {data['resample_params']['target_frequency_hz']}"
-            )
-            print(f"-- num_method: {data['resample_params']['num_method']}")
-            print(f"-- cat_method: {data['resample_params']['cat_method']}")
-            print(
-                f"-- target_frequency_hz: {data['resample_params']['interpolate_numerical']}"
-            )
-            print(
-                f"-- interpolate_method: {data['resample_params']['interpolate_method']}"
-            )
-            print("")
+        log("Resampling parameters:", verbosity=verbose, log_level=0)
+        log(
+            f"-- target_frequency_hz: {data['resample_params']['target_frequency_hz']}"
+        , verbosity=verbose, log_level=0)
+        log(f"-- num_method: {data['resample_params']['num_method']}", verbosity=verbose, log_level=0)
+        log(f"-- cat_method: {data['resample_params']['cat_method']}", verbosity=verbose, log_level=0)
+        log(
+            f"-- target_frequency_hz: {data['resample_params']['interpolate_numerical']}"
+        , verbosity=verbose, log_level=0)
+        log(
+            f"-- interpolate_method: {data['resample_params']['interpolate_method']}"
+        , verbosity=verbose, log_level=0)
+        log("", verbosity=verbose, log_level=0)
 
         unified_df = resample_unified(
             unified_df, msg_reference, data["resample_params"], verbose
@@ -617,8 +605,7 @@ def ulog_csv(
     unified_df.to_csv("unified.csv", index=False)
 
     if clean:
-        if verbose:
-            print("")
-            print(84 * "-")
-            print("Cleaning directory and breadcrumbs.")
+        log("", verbosity=verbose, log_level=0)
+        log(84 * "-", verbosity=verbose, log_level=0)
+        log("Cleaning directory and breadcrumbs.", verbosity=verbose, log_level=0)
         shutil.rmtree(output_dir)

@@ -11,6 +11,7 @@ from copy import deepcopy
 from glob import glob
 from pyulog import ULog
 from typing import List
+from srta_drone_dataset.util.logger import log
 
 
 def convert_ulog2csv(
@@ -23,6 +24,7 @@ def convert_ulog2csv(
     time_s: float | None = None,
     time_e: float | None = None,
     disable_str_exceptions: bool = False,
+    verbose: bool = True
     ) -> None:
     """
     Converts a PX4 ULog file to CSV files.
@@ -45,8 +47,12 @@ def convert_ulog2csv(
     ulog_file_name = os.path.join(directory_address, ulog_file_name)
     msg_filter = messages if messages else None
 
-    ulog = ULog(ulog_file_name, msg_filter, disable_str_exceptions)
-    data = ulog.data_list
+    try:
+        ulog = ULog(ulog_file_name, msg_filter, disable_str_exceptions)
+        data = ulog.data_list
+    except Exception:
+        log("Issue with converting file " + ulog_file_name + ". It is most likely due to its filetype or integrity.", verbosity=verbose, log_level=1)
+        return
 
     output_file_prefix = ulog_file_name
     # strip '.ulg' || '.ulog'
