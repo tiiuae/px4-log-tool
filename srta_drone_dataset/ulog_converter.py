@@ -483,9 +483,8 @@ def ulog_csv(
         log("Conversion Progress:", verbosity=verbose, log_level=0)
     for process in processes:
         process.join()
-        if verbose:
-            i += 1
-            progress_bar(i / total)
+        i += 1
+        progress_bar(i / total, verbose)
 
     # = File Merge =#
     if not merge:
@@ -523,9 +522,8 @@ def ulog_csv(
         log("Merging Progress:", verbosity=verbose, log_level=0)
     for process in processes:
         process.join()
-        if verbose:
-            i += 1
-            progress_bar(i / total)
+        i += 1
+        progress_bar(i / total, verbose)
 
     # = File Unification =#
 

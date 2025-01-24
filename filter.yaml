@@ -11,3 +11,11 @@ resample_params:
   cat_method: 'bfill'
   interpolate_numerical: True
   interpolate_method: 'linear'
+metadata_fields:
+  - "max_altitude"
+  - "min_altitude"
+  - "average_altitude"
+  - "max_speed"
+  # - "min_speed"
+  - "average_speed"
+  - "yaw_lock"

@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 # Environment configuration
-print_level = int(os.getenv("PRINT_LEVEL", "0"))  # Default to 0 (basic info)
+print_level = int(os.getenv("PRINT_LEVEL", "0"))
 enable_colors = os.getenv("LOG_COLORS", "true").lower() == "true"
 
 class ColorCodes:

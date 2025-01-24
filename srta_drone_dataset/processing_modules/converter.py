@@ -10,7 +10,7 @@ from collections import Counter
 from copy import deepcopy
 from glob import glob
 from pyulog import ULog
-from typing import List
+from typing import Dict, List
 from srta_drone_dataset.util.logger import log
 
 
@@ -25,7 +25,7 @@ def convert_ulog2csv(
     time_e: float | None = None,
     disable_str_exceptions: bool = False,
     verbose: bool = True
-    ) -> None:
+    ) -> Dict:
     """
     Converts a PX4 ULog file to CSV files.
 
@@ -52,7 +52,7 @@ def convert_ulog2csv(
         data = ulog.data_list
     except Exception:
         log("Issue with converting file " + ulog_file_name + ". It is most likely due to its filetype or integrity.", verbosity=verbose, log_level=1)
-        return
+        return {}
 
     output_file_prefix = ulog_file_name
     # strip '.ulg' || '.ulog'
@@ -79,6 +79,7 @@ def convert_ulog2csv(
             [d.name.replace("/", "_") for d in data]
         )
     redundant_msgs = [string for string, count in counts.items() if count > 1]
+    data_frame_dict = {}
 
     for d in data:
         if d.name.replace("/", "_") in redundant_msgs:
@@ -130,6 +131,8 @@ def convert_ulog2csv(
                     if k != last_elem:
                         csvfile.write(delimiter)
                 csvfile.write("\n")
+        data_frame_dict[output_file_name.split("/")[-1].split(".")[0]] = pd.read_csv(output_file_name)
+    return data_frame_dict
 
 
 def convert_csv2ros2bag(
