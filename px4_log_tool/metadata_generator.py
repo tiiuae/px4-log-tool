@@ -1,5 +1,5 @@
-from srta_drone_dataset.util.logger import log
-from srta_drone_dataset.processing_modules.metagen import get_file_metadata
+from px4_log_tool.util.logger import log
+from px4_log_tool.processing_modules.metagen import get_file_metadata
 import os
 import json
 import yaml

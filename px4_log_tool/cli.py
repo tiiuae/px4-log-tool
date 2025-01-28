@@ -1,6 +1,6 @@
 import click
-from srta_drone_dataset.ulog_converter import ulog_csv
-from srta_drone_dataset.metadata_generator import generate_ulog_metadata
+from px4_log_tool.ulog_converter import ulog_csv
+from px4_log_tool.metadata_generator import generate_ulog_metadata
 
 
 # Context object to store verbose flag
@@ -14,7 +14,7 @@ class CLIContext:
 @click.pass_context
 def cli(ctx, verbose):
     """
-    srta-drone-dataset CLI Tool
+    px4-log-tool CLI Tool
     """
     ctx.ensure_object(CLIContext)
     ctx.obj.verbose = verbose

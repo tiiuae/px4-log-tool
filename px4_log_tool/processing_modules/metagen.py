@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from srta_drone_dataset.processing_modules.converter import convert_ulog2csv
+from px4_log_tool.processing_modules.converter import convert_ulog2csv
 
 
 def _calc_min_altitude(dataframe: pd.DataFrame) -> float:

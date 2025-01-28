@@ -32,4 +32,4 @@ COPY --from=build /usr/local /usr/local
 
 WORKDIR /app
 
-CMD ["srta-drone-dataset"]
+CMD ["px4-log-tool"]

@@ -1,4 +1,4 @@
-name: srta-drone-dataset
+name: px4-log-tool
 channels:
   - defaults
 dependencies:

@@ -4,18 +4,18 @@ with open('requirements.txt', 'r') as f:
     install_requires = f.read().splitlines()
 
 setup(
-    name="srta-drone-dataset",
+    name="px4-log-tool",
     version="0.2.0",
     description="A brief description of your project",
     author="Junior Sundar",
     author_email="junior.sundar@tii.ae",
-    url="https://github.com/tiiuae/srta-drone-dataset",
+    url="https://github.com/tiiuae/px4-log-tool",
     packages=find_packages(),
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            # "srta-drone-dataset=srta_drone_dataset.cli:main",
-            "srta-drone-dataset=srta_drone_dataset.cli:cli",
+            # "px4-log-tool=px4_log_tool.cli:main",
+            "px4-log-tool=px4_log_tool.cli:cli",
         ],
     },
     classifiers=[
