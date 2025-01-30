@@ -39,7 +39,6 @@ resample_params:
 4. **Cleanup (Optional):** If the `-c` flag is set, removes intermediate files and directories, leaving only 'unified.csv'.
 """
 
-import argparse
 import os
 import shutil
 from copy import deepcopy
@@ -52,7 +51,6 @@ import pandas as pd
 import yaml
 
 from px4_log_tool.processing_modules.converter import (
-    convert_csv2ros2bag,
     convert_ulog2csv,
 )
 from px4_log_tool.processing_modules.merger import merge_csv
@@ -141,290 +139,6 @@ def resample_unified(
             progress_bar(i / len(mission_names))
 
     return resampled_df
-
-
-def ulog_converter():
-    parser = argparse.ArgumentParser(
-        description="Convert ULOG files inside directory to CSV"
-    )
-    parser.add_argument(
-        "-b",
-        "--rosbag",
-        action="count",
-        help="Convert each mission into a ROS 2 bag (sqlite / .db)",
-        default=0,
-    )
-    parser.add_argument(
-        "-m",
-        "--merge",
-        action="count",
-        help="Merge all files into one .csv (leaves breadcrumbs)",
-        default=0,
-    )
-    parser.add_argument(
-        "-r",
-        "--resample",
-        action="count",
-        help="Resample data to a given frequency (filter.yaml is mandatory)",
-        default=0,
-    )
-    parser.add_argument(
-        "-c",
-        "--clean",
-        action="count",
-        help="Cleans directory and breadcrumbs leaving only unified.csv",
-        default=0,
-    )
-    parser.add_argument("-v", "--verbose", action="count", default=0)
-    parser.add_argument(
-        "directory",
-        help="Path to the directory containing all ULOG files",
-        default=None,
-    )
-    parser.add_argument(
-        "filter",
-        help="Filter .yaml file for [message whitelists, header blacklists]",
-        default=None,
-    )
-    parser.add_argument(
-        "-o",
-        "--output_dir",
-        help="This module creates a mirror directory tree of the one provided with the CSV files in corresponding locations",
-        default="output_dir",
-    )
-
-    args = parser.parse_args()
-    ulog_dir: str = args.directory
-    output_dir: str = args.output_dir
-    filter: str = args.filter
-    verbose: bool = args.verbose
-    resample: bool = args.resample
-    rosbag: bool = args.rosbag
-    merge: bool = args.merge
-    clean: bool = args.clean
-
-    if rosbag:
-        print("")
-        print("WARNING: Since ROS2 bags are created:")
-        print("--> cleaning of output_dir is disabled")
-        print("--> merging of .csv files is disabled")
-        print("")
-        try:
-            import px4_msgs.msg  # noqa: F401
-        except ImportError:
-            print("ERROR: px4_msgs package not found.")
-            return
-        clean = False
-
-    # = File Conversion =#
-
-    ulog_files = []
-    for root, _, files in os.walk(ulog_dir):
-        for file in files:
-            if file.split(".")[-1] == "ulg" or file.split(".")[-1] == "ulog":
-                ulog_files.append((root, file))
-
-    if verbose:
-        print(f"Converting [{len(ulog_files)}] .ulog files to .csv.")
-        print("")
-
-    with open(filter, "r") as f:
-        data = yaml.safe_load(f)
-
-    if verbose:
-        print("Whitelisted topics are:")
-        for entry in data["whitelist_messages"]:
-            print(f" - {entry}")
-        print("")
-        print("Blacklisted headers are:")
-        for entry in data["blacklist_headers"]:
-            print(f" - {entry}")
-
-    processes = []
-    for file in ulog_files:
-        process = Process(
-            target=convert_ulog2csv,
-            args=(
-                file[0],
-                file[1],
-                data["whitelist_messages"],
-                os.path.join(output_dir, file[0]),
-                data["blacklist_headers"],
-            ),
-        )
-        processes.append(process)
-        process.start()
-
-    i = 0
-    total = len(processes)
-    if verbose:
-        print("")
-        print("Conversion Progress:")
-    for process in processes:
-        process.join()
-        if verbose:
-            i += 1
-            progress_bar(i / total)
-
-    # = to bags = #
-    if rosbag:
-        processes = []
-        for file in ulog_files:
-            process = Process(
-                target=convert_csv2ros2bag,
-                args=(
-                    os.path.join(
-                        output_dir, os.path.join(file[0], file[1].split(".")[0])
-                    ),
-                    "/fmu/out",
-                    True,
-                ),
-            )
-            processes.append(process)
-            process.start()
-        if verbose:
-            print("")
-            print("")
-            print(84 * "-")
-            print("Converting .csv files to ROS2 bags")
-            print("")
-            total = len(processes)
-            i = 0
-            progress_bar(i / total)
-            print("")
-
-        for process in processes:
-            process.join()
-            if verbose:
-                i += 1
-                progress_bar(i / total)
-
-    # = File Merge =#
-    if not merge or rosbag:
-        return
-
-    if verbose:
-        print("")
-        print("")
-        print(84 * "-")
-        print("Merging .csv files -- Breadcrumbs will be created as merged.csv.")
-        print("")
-
-    csv_files = []
-    for root, _, files in os.walk(output_dir):
-        if len(files) > 0:
-            csv_files.append((root, files))
-
-    if verbose:
-        print(f"Merging into [{len(csv_files)}] .csv files.")
-        print("")
-
-    processes = []
-
-    for file in csv_files:
-        process = Process(
-            target=merge_csv,
-            args=(file[0], file[1]),
-        )
-        processes.append(process)
-        process.start()
-
-    i = 0
-    total = len(processes)
-    if verbose:
-        print("Merging Progress:")
-    for process in processes:
-        process.join()
-        if verbose:
-            i += 1
-            progress_bar(i / total)
-
-    # = File Unification =#
-
-    merge_files = []
-    for root, _, files in os.walk(output_dir):
-        if "merged.csv" in files:
-            merge_files.append(root)
-
-    if verbose:
-        print("")
-        print("")
-        print(84 * "-")
-        print(
-            "Unifying all 'merged.csv' files into a single 'unified.csv' -- This may take a while."
-        )
-
-    unified_df = pd.concat(
-        [pd.read_csv(os.path.join(file, "merged.csv")) for file in merge_files]
-    )
-
-    msg_reference = None
-    if resample:
-        print("")
-        print("")
-        print(84 * "-")
-        print("Resampling `unified.csv`.")
-        try:
-            msg_reference = pd.read_csv("msg_reference.csv")
-        except FileNotFoundError:
-            print("Error: msg_reference.csv not found.")
-            print(
-                "Case 1 -- Ensure that the msg_reference.csv file is present in the directory this script is being run from."
-            )
-            print(
-                "Case 2 -- Please restore this repository or download this file from the source."
-            )
-            print(
-                "Case 3 -- If resampling is not desired, please remove the resample flag from the command line."
-            )
-            return
-
-        try:
-            _ = data["resample_params"]["target_frequency_hz"]
-            _ = data["resample_params"]["num_method"]
-            _ = data["resample_params"]["cat_method"]
-            _ = data["resample_params"]["interpolate_numerical"]
-            _ = data["resample_params"]["interpolate_method"]
-        except KeyError:
-            print("Warning: Incomplete resampling parameters provided in filter.yaml.")
-            print("Using default values.")
-            print("")
-            data["resample_params"] = {
-                "target_frequency_hz": 10,
-                "num_method": "mean",
-                "cat_method": "ffill",
-                "interpolate_numerical": True,
-                "interpolate_method": "linear",
-            }
-
-        if verbose:
-            print("Resampling parameters:")
-            print(
-                f"-- target_frequency_hz: {data['resample_params']['target_frequency_hz']}"
-            )
-            print(f"-- num_method: {data['resample_params']['num_method']}")
-            print(f"-- cat_method: {data['resample_params']['cat_method']}")
-            print(
-                f"-- target_frequency_hz: {data['resample_params']['interpolate_numerical']}"
-            )
-            print(
-                f"-- interpolate_method: {data['resample_params']['interpolate_method']}"
-            )
-            print("")
-
-        unified_df = resample_unified(
-            unified_df, msg_reference, data["resample_params"], verbose
-        )
-
-    unified_df.to_csv("unified.csv", index=False)
-
-    if clean:
-        if verbose:
-            print("")
-            print(84 * "-")
-            print("Cleaning directory and breadcrumbs.")
-        shutil.rmtree(output_dir)
-
 
 def ulog_csv(
     verbose: bool,
@@ -536,9 +250,6 @@ def ulog_csv(
 
     msg_reference = None
     if resample:
-        # log("", verbosity=verbose, log_level=0)
-        # log("", verbosity=verbose, log_level=0)
-        # log(84 * "-", verbosity=verbose, log_level=0)
         log("Resampling `unified.csv`.", verbosity=verbose, log_level=0)
         try:
             msg_reference = pd.read_csv("msg_reference.csv")
@@ -585,7 +296,6 @@ def ulog_csv(
         log(
             f"-- interpolate_method: {data['resample_params']['interpolate_method']}"
         , verbosity=verbose, log_level=0)
-        # log("", verbosity=verbose, log_level=0)
 
         unified_df = resample_unified(
             unified_df, msg_reference, data["resample_params"], verbose
@@ -594,7 +304,5 @@ def ulog_csv(
     unified_df.to_csv("unified.csv", index=False)
 
     if clean:
-        # log("", verbosity=verbose, log_level=0)
-        # log(84 * "-", verbosity=verbose, log_level=0)
         log("Cleaning directory and breadcrumbs.", verbosity=verbose, log_level=0)
         shutil.rmtree(output_dir)

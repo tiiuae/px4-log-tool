@@ -19,6 +19,30 @@ cd px4-log-tool
 pip install -e .
 ```
 
+# Usage
+
+The CLI tool should have a rich help feature.
+
+```bash
+px4-log-tool --help
+px4-log-tool subcommands --help
+```
+
+Every subcommand is documented and can be queried with the `--help` flag.
+
+By default, the logging is set to only flag "ERROR" that cause the program to fail.
+
+```bash
+px4-log-tool --verbose subcommands #shows ERROR
+```
+
+To see general INFO and WARN messages, adjust the environment variable `PRINT_LEVEL` to 2 or 1.
+
+```bash
+PRINT_LEVEL=1 px4-log-tool --verbose subcommands #shows WARN, ERROR
+PRINT_LEVEL=2 px4-log-tool --verbose subcommands #shows INFO, WARN, ERROR
+```
+
 # Data Conversion and Pre-Processing
 
 ## `filter.yaml`

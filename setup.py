@@ -5,7 +5,7 @@ with open('requirements.txt', 'r') as f:
 
 setup(
     name="px4-log-tool",
-    version="0.2.0",
+    version="0.3.0",
     description="A brief description of your project",
     author="Junior Sundar",
     author_email="junior.sundar@tii.ae",

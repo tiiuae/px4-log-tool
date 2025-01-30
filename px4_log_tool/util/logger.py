@@ -33,8 +33,9 @@ def log(
     color: bool = True
 ):
     # Original abs() logic
-    if not verbosity or abs(log_level - 2) > print_level:
-        return
+    if not verbosity:
+        if abs(log_level - 2) > print_level:
+            return
 
     # Get level name and color
     level_info = LOG_LEVELS.get(log_level, LOG_LEVELS[0])
