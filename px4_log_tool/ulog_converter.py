@@ -365,7 +365,7 @@ def ulog_converter():
         print(84 * "-")
         print("Resampling `unified.csv`.")
         try:
-            msg_reference = pd.read_csv(os.path.join(os.getcwd(), "msg_reference.csv"))
+            msg_reference = pd.read_csv("msg_reference.csv")
         except FileNotFoundError:
             print("Error: msg_reference.csv not found.")
             print(
@@ -550,7 +550,7 @@ def ulog_csv(
         log(84 * "-", verbosity=verbose, log_level=0)
         log("Resampling `unified.csv`.", verbosity=verbose, log_level=0)
         try:
-            msg_reference = pd.read_csv(os.path.join(os.getcwd(), "msg_reference.csv"))
+            msg_reference = pd.read_csv("msg_reference.csv")
         except FileNotFoundError:
             log("Error: msg_reference.csv not found.", verbosity=verbose, log_level=2)
             log(

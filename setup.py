@@ -11,6 +11,9 @@ setup(
     author_email="junior.sundar@tii.ae",
     url="https://github.com/tiiuae/px4-log-tool",
     packages=find_packages(),
+    package_data= {
+        "px4-log-tool": ["msg_reference.csv"],
+    },
     include_package_data=True,
     entry_points={
         "console_scripts": [
