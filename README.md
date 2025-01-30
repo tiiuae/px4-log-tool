@@ -2,6 +2,23 @@
 title: px4-log-tool
 description: The All-in-One tool to work with PX4 log files.
 ---
+
+# Installation
+
+## Regular Installation
+
+```bash
+ pip install git+https://github.com/tiiuae/px4-log-tool.git#egg=px4-log-tool
+```
+
+## Developer Mode
+
+```bash
+git clone https://www.github.com/tiiuae/px4-log-tool.git
+cd px4-log-tool
+pip install -e .
+```
+
 # Data Conversion and Pre-Processing
 
 ## `filter.yaml`
