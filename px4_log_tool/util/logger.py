@@ -28,7 +28,9 @@ def log(
     log_level: int = 0,  # 0=INFO, 1=WARN, 2=ERROR
     verbosity: bool = True,
     bold: bool = False,
-    underline: bool = False
+    underline: bool = False,
+    timestamped: bool = True,
+    color: bool = True
 ):
     # Original abs() logic
     if not verbosity or abs(log_level - 2) > print_level:
@@ -52,5 +54,8 @@ def log(
         formatted_msg = f"{ColorCodes.UNDERLINE}{formatted_msg}{ColorCodes.RESET}"
     
     # Construct final message
-    full_message = f"{timestamp} {colored_level} - {formatted_msg}"
-    print(full_message)
+    if color:
+        formatted_msg = f"{colored_level}  {formatted_msg}"
+    if timestamped:
+        formatted_msg = f"{timestamp} {formatted_msg}"
+    print(formatted_msg)

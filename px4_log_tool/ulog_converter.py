@@ -442,17 +442,15 @@ def ulog_csv(
                 ulog_files.append((root, file))
 
     log(msg=f"Converting [{len(ulog_files)}] .ulog files to .csv.", verbosity=verbose, log_level=0)
-    log(msg="", verbosity=verbose, log_level=0)
 
     with open(filter, "r") as f:
         data = yaml.safe_load(f)
 
     if verbose:
-        log("Whitelisted topics are:", verbosity=verbose, log_level=0)
+        log("Whitelisted topics are:", verbosity=verbose, log_level=0, bold=True)
         for entry in data["whitelist_messages"]:
             log(f" - {entry}", verbosity=verbose, log_level=0)
-        log("")
-        log("Blacklisted headers are:", verbosity=verbose, log_level=0)
+        log("Blacklisted headers are:", verbosity=verbose, log_level=0,bold=True)
         for entry in data["blacklist_headers"]:
             log(f" - {entry}", verbosity=verbose, log_level=0)
 
@@ -479,23 +477,19 @@ def ulog_csv(
     i = 0
     total = len(processes)
     if verbose:
-        log("", verbosity=verbose, log_level=0)
-        log("Conversion Progress:", verbosity=verbose, log_level=0)
+        log("Conversion Progress:", verbosity=verbose, log_level=0,bold=True)
     for process in processes:
         process.join()
         i += 1
         progress_bar(i / total, verbose)
+    log("", verbosity=verbose, log_level=0, color=False,timestamped=False)
 
     # = File Merge =#
     if not merge:
         return
 
     if verbose:
-        log("", verbosity=verbose, log_level=0)
-        log("", verbosity=verbose, log_level=0)
-        log(84 * "-", verbosity=verbose, log_level=0)
         log("Merging .csv files -- Breadcrumbs will be created as merged.csv.", verbosity=verbose, log_level=0)
-        log("", verbosity=verbose, log_level=0)
 
     csv_files = []
     for root, _, files in os.walk(output_dir):
@@ -504,7 +498,6 @@ def ulog_csv(
 
     if verbose:
         log(f"Merging into [{len(csv_files)}] .csv files.", verbosity=verbose, log_level=0)
-        log("", verbosity=verbose, log_level=0)
 
     processes = []
 
@@ -519,11 +512,12 @@ def ulog_csv(
     i = 0
     total = len(processes)
     if verbose:
-        log("Merging Progress:", verbosity=verbose, log_level=0)
+        log("Merging Progress:", verbosity=verbose, log_level=0, bold=True)
     for process in processes:
         process.join()
         i += 1
         progress_bar(i / total, verbose)
+    log("", verbosity=verbose, log_level=0, color=False, timestamped=False)
 
     # = File Unification =#
 
@@ -532,9 +526,6 @@ def ulog_csv(
         if "merged.csv" in files:
             merge_files.append(root)
 
-    log("", verbosity=verbose, log_level=0)
-    log("", verbosity=verbose, log_level=0)
-    log(84 * "-", verbosity=verbose, log_level=0)
     log(
         "Unifying all 'merged.csv' files into a single 'unified.csv' -- This may take a while."
     , verbosity=verbose, log_level=0)
@@ -545,9 +536,9 @@ def ulog_csv(
 
     msg_reference = None
     if resample:
-        log("", verbosity=verbose, log_level=0)
-        log("", verbosity=verbose, log_level=0)
-        log(84 * "-", verbosity=verbose, log_level=0)
+        # log("", verbosity=verbose, log_level=0)
+        # log("", verbosity=verbose, log_level=0)
+        # log(84 * "-", verbosity=verbose, log_level=0)
         log("Resampling `unified.csv`.", verbosity=verbose, log_level=0)
         try:
             msg_reference = pd.read_csv("msg_reference.csv")
@@ -594,7 +585,7 @@ def ulog_csv(
         log(
             f"-- interpolate_method: {data['resample_params']['interpolate_method']}"
         , verbosity=verbose, log_level=0)
-        log("", verbosity=verbose, log_level=0)
+        # log("", verbosity=verbose, log_level=0)
 
         unified_df = resample_unified(
             unified_df, msg_reference, data["resample_params"], verbose
@@ -603,7 +594,7 @@ def ulog_csv(
     unified_df.to_csv("unified.csv", index=False)
 
     if clean:
-        log("", verbosity=verbose, log_level=0)
-        log(84 * "-", verbosity=verbose, log_level=0)
+        # log("", verbosity=verbose, log_level=0)
+        # log(84 * "-", verbosity=verbose, log_level=0)
         log("Cleaning directory and breadcrumbs.", verbosity=verbose, log_level=0)
         shutil.rmtree(output_dir)
