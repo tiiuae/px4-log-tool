@@ -56,7 +56,7 @@ def ulog2csv(ctx, directory_address, resample, clean, merge, filter, output_dir)
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
-    ulog_csv(ctx.obj.verbose, directory_address, filter, output_dir, merge, clean, resample)
+    ulog_csv(verbose=ctx.obj.verbose, ulog_dir=directory_address, filter=filter, output_dir=output_dir, merge=merge, clean=clean, resample=resample)
 
 
 @click.command()
