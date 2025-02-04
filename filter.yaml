@@ -19,3 +19,6 @@ metadata_fields:
   # - "min_speed"
   - "average_speed"
   - "yaw_lock"
+bag_params:
+  topic_prefix: "/fmu/out"
+  capitalise_topics: False

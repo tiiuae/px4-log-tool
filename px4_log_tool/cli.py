@@ -110,20 +110,23 @@ def generate_metadata(ctx, directory_address, filter):
 @click.command()
 @click.argument("directory_address", type=click.Path(exists=True))
 @click.option(
+    "-f", "--filter", type=click.Path(exists=True), help="Path to the filter YAML file."
+)
+@click.option(
     "-o",
     "--output_dir",
     type=click.Path(exists=False),
     help="Create mirror directory tree of CSVs directory and populate with DB3 bags. Operation in-place if none provided.",
 )
 @click.pass_context
-def csv2db3(ctx, directory_address, output_dir):
+def csv2db3(ctx, directory_address, filter, output_dir):
     """
     Convert and merge CSV files in a directory into ROS 2 bag DB3 files in DIRECTORY_ADDRESS.
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
     click.echo(f"Converting CSV to ROS 2 bag DB3 in {directory_address}")
-    csv_db3(verbose=ctx.obj.verbose, directory_address=directory_address, output_dir=output_dir)
+    csv_db3(verbose=ctx.obj.verbose, directory_address=directory_address, filter=filter, output_dir=output_dir)
 
 
 # Adding commands to the CLI

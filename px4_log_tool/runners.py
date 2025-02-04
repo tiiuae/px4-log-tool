@@ -18,6 +18,7 @@ import shutil
 
 FILTER = dict()
 
+
 def ulog_csv(
     verbose: bool,
     ulog_dir: str,
@@ -29,19 +30,27 @@ def ulog_csv(
 ):
     global FILTER
 
-    FILTER = extract_filter(filter=filter, verbose=verbose)
+    FILTER = extract_filter(filter_str=filter, verbose=verbose)
 
     ulog_files = get_ulog_files(ulog_dir=ulog_dir, verbose=verbose)
 
     if output_dir is None:
         output_dir = "./output_dir"
-    convert_dir_ulog_csv(ulog_files=ulog_files, output_dir=output_dir, filter=FILTER, verbose=verbose)
+    convert_dir_ulog_csv(
+        ulog_files=ulog_files, output_dir=output_dir, filter=FILTER, verbose=verbose
+    )
 
     if merge:
         unified_df = merge_csvs(output_dir=output_dir, verbose=verbose)
         msg_reference = get_msg_reference(verbose=verbose)
         if resample and msg_reference is not None:
-            _ = resample_unified(unified_df=unified_df, msg_reference=msg_reference, resample_params=FILTER['resample_params'], in_place=True, verbose=verbose)
+            _ = resample_unified(
+                unified_df=unified_df,
+                msg_reference=msg_reference,
+                resample_params=FILTER["resample_params"],
+                in_place=True,
+                verbose=verbose,
+            )
 
     if resample and not merge:
         log("Cannot resample without merging!", log_level=2, verbosity=verbose)
@@ -55,26 +64,32 @@ def ulog_csv(
 def csv_db3(
     verbose: bool,
     directory_address: str,
+    filter: str,
     output_dir: str | None,
 ):
+    global FILTER
+
+    FILTER = extract_filter(filter_str=filter, verbose=verbose)
     csv_dirs = get_csv_dirs(csv_dir=directory_address, verbose=verbose)
-    
+
     if output_dir is None:
         log(".db3 ROS 2 Bags will be created in-place.", log_level=1, verbosity=verbose)
         output_dir = ""
 
-    convert_dir_csv_db3(csv_dirs=csv_dirs, output_dir=output_dir, verbose=verbose)
+    convert_dir_csv_db3(
+        csv_dirs=csv_dirs,
+        output_dir=output_dir,
+        topic_prefix=FILTER["bag_params"]["topic_prefix"],
+        capitalise_topics=FILTER["bag_params"]["capitalise_topics"],
+        verbose=verbose,
+    )
     return
 
 
-def generate_ulog_metadata(
-    verbose: bool,
-    directory_address: str,
-    filter: str
-):
+def generate_ulog_metadata(verbose: bool, directory_address: str, filter: str):
     global FILTER
 
-    FILTER = extract_filter(filter=filter, verbose=verbose)
+    FILTER = extract_filter(filter_str=filter, verbose=verbose)
 
     metadata_fields = FILTER["metadata_fields"]
     for dirpath, _, filenames in os.walk(directory_address):
@@ -98,4 +113,3 @@ def generate_ulog_metadata(
             with open(json_filepath, "w") as f:
                 json.dump(json_data, f, indent=4)
     return
-

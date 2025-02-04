@@ -117,7 +117,7 @@ def extract_filter(filter: str | None, verbose: bool = False):
     Returns:
     - None
     """
-    FILTER = dict()
+    filter = dict()
 
     if filter is not None:
         with open(filter, "r") as f:
@@ -126,52 +126,64 @@ def extract_filter(filter: str | None, verbose: bool = False):
         FILTER = {}
 
     try:
-        _ = FILTER["whitelist_messages"]
+        _ = filter["whitelist_messages"]
     except KeyError:
-        log("Warning: Missing whitelist_messages in filter.yaml.", verbosity=verbose, log_level=1)
+        log(f"Warning: Missing whitelist_messages in {filter_str}.", verbosity=verbose, log_level=1)
         log("Using default values.", verbosity=verbose, log_level=1)
         log("", verbosity=verbose, log_level=1)
         FILTER["whitelist_messages"] = ["sensor_combined", "actuator_outputs"]
     log("Whitelisted topics are:", verbosity=verbose, log_level=0, bold=True)
-    for entry in FILTER["whitelist_messages"]:
+    for entry in filter["whitelist_messages"]:
         log(f"-- {entry}", verbosity=verbose, log_level=0)
 
     try:
-        _ = FILTER["blacklist_messages"]
+        _ = filter["blacklist_messages"]
     except KeyError:
-        log("Warning: Missing blacklist_headers in filter.yaml.", verbosity=verbose, log_level=1)
+        log(f"Warning: Missing blacklist_headers in {filter_str}.", verbosity=verbose, log_level=1)
         log("Using default values.", verbosity=verbose, log_level=1)
         log("", verbosity=verbose, log_level=1)
-        FILTER["blacklist_headers"] =[ "timestamp_sample", "device_id", "error_count"]
+        filter["blacklist_headers"] =[ "timestamp_sample", "device_id", "error_count"]
     log("Blacklisted headers are:", verbosity=verbose, log_level=0,bold=True)
-    for entry in FILTER["blacklist_headers"]:
+    for entry in filter["blacklist_headers"]:
         log(f"-- {entry}", verbosity=verbose, log_level=0)
 
     try:
-        _ = FILTER["resample_params"]["target_frequency_hz"]
-        _ = FILTER["resample_params"]["num_method"]
-        _ = FILTER["resample_params"]["cat_method"]
-        _ = FILTER["resample_params"]["interpolate_numerical"]
-        _ = FILTER["resample_params"]["interpolate_method"]
+        _ = filter["resample_params"]["target_frequency_hz"]
+        _ = filter["resample_params"]["num_method"]
+        _ = filter["resample_params"]["cat_method"]
+        _ = filter["resample_params"]["interpolate_numerical"]
+        _ = filter["resample_params"]["interpolate_method"]
     except KeyError:
-        log("Warning: Incomplete resampling parameters provided in filter.yaml.", verbosity=verbose, log_level=1)
+        log(f"Warning: Incomplete resampling parameters provided in {filter_str}.", verbosity=verbose, log_level=1)
         log("Using default values.", verbosity=verbose, log_level=1)
         log("", verbosity=verbose, log_level=1)
-        FILTER["resample_params"] = {
+        filter["resample_params"] = {
             "target_frequency_hz": 10,
             "num_method": "mean",
             "cat_method": "ffill",
             "interpolate_numerical": True,
             "interpolate_method": "linear",
         }
-
     log("Resampling parameters:", verbosity=verbose, log_level=0)
-    log(f"-- target_frequency_hz: {FILTER['resample_params']['target_frequency_hz']}", verbosity=verbose, log_level=0)
-    log(f"-- num_method: {FILTER['resample_params']['num_method']}", verbosity=verbose, log_level=0)
-    log(f"-- cat_method: {FILTER['resample_params']['cat_method']}", verbosity=verbose, log_level=0)
-    log(f"-- target_frequency_hz: {FILTER['resample_params']['interpolate_numerical']}", verbosity=verbose, log_level=0)
-    log(f"-- interpolate_method: {FILTER['resample_params']['interpolate_method']}", verbosity=verbose, log_level=0)
-    return FILTER
+    for entry in filter["resample_params"]:
+        log(f"-- {entry}", verbosity=verbose, log_level=0)
+
+    try:
+        _ = filter["bag_params"]["topic_prefix"]
+        _ = filter["bag_params"]["capitalise_topics"]
+    except KeyError:
+        log(f"Warning: No ROS 2 bag parameters provided in {filter_str}.", verbosity=verbose, log_level=1)
+        log("Using default values.", verbosity=verbose, log_level=1)
+        log("", verbosity=verbose, log_level=1)
+        filter["bag_params"] = {
+            "topic_prefix": "/fmu/out",
+            "capitalise_topics": False,
+        }
+    log("ROS 2 bag parameters:", verbosity=verbose, log_level=0)
+    for entry in filter["bag_params"]:
+        log(f"-- {entry}", verbosity=verbose, log_level=0)
+
+    return filter
 
 
 def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[str]:
@@ -246,7 +258,7 @@ def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, filter: dict, v
     return
 
 
-def convert_dir_csv_db3(csv_dirs: list[str], output_dir: str, verbose: bool = False):
+def convert_dir_csv_db3(csv_dirs: list[str], output_dir: str, topic_prefix: str, capitalise_topics: bool, verbose: bool = False):
 
     processes = []
     for dir in csv_dirs:
@@ -255,8 +267,8 @@ def convert_dir_csv_db3(csv_dirs: list[str], output_dir: str, verbose: bool = Fa
             args=(
                 dir,
                 os.path.join(output_dir, dir),
-                "/fmu/out",
-                False,
+                topic_prefix,
+                capitalise_topics,
                 verbose
             )
         )
