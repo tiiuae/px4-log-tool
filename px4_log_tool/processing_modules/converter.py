@@ -138,6 +138,7 @@ def convert_ulog2csv(
 
 def convert_csv2ros2bag(
     directory_address: str,
+    output_dir: str,
     topic_prefix: str = "/fmu/out",
     capitalise_topics: bool = False,
     verbose: bool = False
@@ -200,7 +201,7 @@ def convert_csv2ros2bag(
         bag_name = directory_address.split("/")[-1]
 
     storage_options = rosbag2_py._storage.StorageOptions(
-        uri=f"{directory_address}/{bag_name}",
+        uri=f"{output_dir}/{bag_name}",
         storage_id="sqlite3",
     )
     converter_options = rosbag2_py._storage.ConverterOptions("", "")
@@ -242,6 +243,7 @@ def convert_csv2ros2bag(
             for field in row.index:
                 set_msg_field(msg, field, row[field])
             writer.write(topic_name, serialize_message(msg), msg.timestamp * 1000)
+
 
 # TODO This needs to be refactored
 def px4_mcap_to_csv(mcap_dir: str) -> None:

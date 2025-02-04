@@ -1,10 +1,11 @@
 #!/usr/bin python3
 import os
 import json
-import yaml
 from px4_log_tool.processing_modules.metagen import get_file_metadata
 from px4_log_tool.util.logger import log
 from px4_log_tool.util.components import (
+    convert_dir_csv_db3,
+    get_csv_dirs,
     get_msg_reference,
     extract_filter,
     get_ulog_files,
@@ -48,6 +49,21 @@ def ulog_csv(
     if clean:
         log("Cleaning directory and breadcrumbs.", verbosity=verbose, log_level=0)
         shutil.rmtree(output_dir)
+    return
+
+
+def csv_db3(
+    verbose: bool,
+    directory_address: str,
+    output_dir: str | None,
+):
+    csv_dirs = get_csv_dirs(csv_dir=directory_address, verbose=verbose)
+    
+    if output_dir is None:
+        log(".db3 ROS 2 Bags will be created in-place.", log_level=1, verbosity=verbose)
+        output_dir = ""
+
+    convert_dir_csv_db3(csv_dirs=csv_dirs, output_dir=output_dir, verbose=verbose)
     return
 
 

@@ -1,6 +1,9 @@
 import click
-from px4_log_tool.runners import ulog_csv
-from px4_log_tool.metadata_generator import generate_ulog_metadata
+from px4_log_tool.runners import (
+    ulog_csv,
+    csv_db3,
+    generate_ulog_metadata
+)
 
 
 # Context object to store verbose flag
@@ -100,19 +103,27 @@ def generate_metadata(ctx, directory_address, filter):
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
-    generate_ulog_metadata(ctx.obj.verbose, directory_address, filter)
+    click.echo(f"Generating .json metadata in place in {directory_address} with filter: {filter}")
+    generate_ulog_metadata(verbose=ctx.obj.verbose, directory_address=directory_address, filter=filter)
 
 
 @click.command()
 @click.argument("directory_address", type=click.Path(exists=True))
+@click.option(
+    "-o",
+    "--output_dir",
+    type=click.Path(exists=False),
+    help="Create mirror directory tree of CSVs directory and populate with DB3 bags. Operation in-place if none provided.",
+)
 @click.pass_context
-def csv2db3(ctx, directory_address):
+def csv2db3(ctx, directory_address, output_dir):
     """
     Convert and merge CSV files in a directory into ROS 2 bag DB3 files in DIRECTORY_ADDRESS.
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
     click.echo(f"Converting CSV to ROS 2 bag DB3 in {directory_address}")
+    csv_db3(verbose=ctx.obj.verbose, directory_address=directory_address, output_dir=output_dir)
 
 
 # Adding commands to the CLI

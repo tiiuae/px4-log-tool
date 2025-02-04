@@ -5,7 +5,7 @@ from multiprocessing import Process
 from typing import Any, Dict
 from px4_log_tool.util.logger import log
 from px4_log_tool.util.tui import progress_bar
-from px4_log_tool.processing_modules.converter import convert_ulog2csv
+from px4_log_tool.processing_modules.converter import convert_csv2ros2bag, convert_ulog2csv
 from px4_log_tool.processing_modules.merger import merge_csv
 from px4_log_tool.processing_modules.resampler import resample_data
 
@@ -195,6 +195,16 @@ def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[str]:
     return ulog_files
 
 
+def get_csv_dirs(csv_dir: str, verbose: bool = False) -> list[str]:
+    csv_dirs = []
+    for root, subdirs, files in os.walk(csv_dir):
+        if not subdirs:
+            if all(file.endswith(".csv") for file in files):
+                csv_dirs.append(root)
+    log(msg=f"Converting [{len(csv_dirs)}] .csv directories into .cb3 ROS 2 bags.", verbosity=verbose, log_level=0)
+    return csv_dirs
+
+
 def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, filter: dict, verbose: bool = False):
     """
     Converts a list of `.ulog` files to `.csv` files in parallel.
@@ -234,6 +244,35 @@ def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, filter: dict, v
         progress_bar(i / total, verbose)
     log("", verbosity=verbose, log_level=0, color=False,timestamped=False)
     return
+
+
+def convert_dir_csv_db3(csv_dirs: list[str], output_dir: str, verbose: bool = False):
+
+    processes = []
+    for dir in csv_dirs:
+        process = Process(
+            target=convert_csv2ros2bag,
+            args=(
+                dir,
+                os.path.join(output_dir, dir),
+                "/fmu/out",
+                False,
+                verbose
+            )
+        )
+        processes.append(process)
+        process.start()
+
+    i = 0
+    total = len(processes)
+    log("Conversion Progress:", verbosity=verbose, log_level=0,bold=True)
+    for process in processes:
+        process.join()
+        i += 1
+        progress_bar(i / total, verbose)
+    log("", verbosity=verbose, log_level=0, color=False,timestamped=False)
+    return
+
 
 def merge_csvs(output_dir: str, verbose: bool = False) -> pd.DataFrame:
     """
