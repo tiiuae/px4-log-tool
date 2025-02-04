@@ -1,21 +1,16 @@
 #!/usr/bin python3
 import os
-import shutil
 from copy import deepcopy
 from multiprocessing import Process
 from typing import Any, Dict
 from px4_log_tool.util.logger import log
 from px4_log_tool.util.tui import progress_bar
-
-import pandas as pd
-import yaml
-
 from px4_log_tool.processing_modules.converter import convert_ulog2csv
 from px4_log_tool.processing_modules.merger import merge_csv
 from px4_log_tool.processing_modules.resampler import resample_data
 
-FILTER = dict()
-
+import pandas as pd
+import yaml
 
 def resample_unified(
     unified_df: pd.DataFrame,
@@ -122,7 +117,7 @@ def extract_filter(filter: str | None, verbose: bool = False):
     Returns:
     - None
     """
-    global FILTER
+    FILTER = dict()
 
     if filter is not None:
         with open(filter, "r") as f:
@@ -176,7 +171,7 @@ def extract_filter(filter: str | None, verbose: bool = False):
     log(f"-- cat_method: {FILTER['resample_params']['cat_method']}", verbosity=verbose, log_level=0)
     log(f"-- target_frequency_hz: {FILTER['resample_params']['interpolate_numerical']}", verbosity=verbose, log_level=0)
     log(f"-- interpolate_method: {FILTER['resample_params']['interpolate_method']}", verbosity=verbose, log_level=0)
-    return
+    return FILTER
 
 
 def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[str]:
@@ -200,7 +195,7 @@ def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[str]:
     return ulog_files
 
 
-def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, verbose: bool = False):
+def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, filter: dict, verbose: bool = False):
     """
     Converts a list of `.ulog` files to `.csv` files in parallel.
 
@@ -209,7 +204,6 @@ def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, verbose: bool =
     - output_dir (str): The output directory for the converted `.csv` files.
     - verbose (bool, optional): Whether to print verbose output. Defaults to False.
     """
-    global FILTER
 
     processes = []
     for file in ulog_files:
@@ -218,9 +212,9 @@ def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, verbose: bool =
             args=(
                 file[0],
                 file[1],
-                FILTER["whitelist_messages"],
+                filter["whitelist_messages"],
                 os.path.join(output_dir, file[0]),
-                FILTER["blacklist_headers"],
+                filter["blacklist_headers"],
                 ",",
                 None,
                 None,
@@ -292,35 +286,4 @@ def merge_csvs(output_dir: str, verbose: bool = False) -> pd.DataFrame:
     unified_df.to_csv("unified.csv", index=False)
     return unified_df
 
-def ulog_csv(
-    verbose: bool,
-    ulog_dir: str,
-    filter: str,
-    output_dir: str | None,
-    merge: bool = False,
-    clean: bool = False,
-    resample: bool = False,
-):
-    global FILTER
 
-    extract_filter(filter=filter, verbose=verbose)
-
-    ulog_files = get_ulog_files(ulog_dir=ulog_dir, verbose=verbose)
-
-    if output_dir is None:
-        output_dir = "./output_dir"
-    convert_dir_ulog_csv(ulog_files=ulog_files, output_dir=output_dir, verbose=verbose)
-
-    if merge:
-        unified_df = merge_csvs(output_dir=output_dir, verbose=verbose)
-        msg_reference = get_msg_reference(verbose=verbose)
-        if resample and msg_reference is not None:
-            _ = resample_unified(unified_df=unified_df, msg_reference=msg_reference, resample_params=FILTER['resample_params'], in_place=True, verbose=verbose)
-
-    if resample and not merge:
-        log("Cannot resample without merging!", log_level=2, verbosity=verbose)
-
-    if clean:
-        log("Cleaning directory and breadcrumbs.", verbosity=verbose, log_level=0)
-        shutil.rmtree(output_dir)
-    return

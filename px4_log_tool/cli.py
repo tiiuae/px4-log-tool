@@ -1,5 +1,5 @@
 import click
-from px4_log_tool.ulog_converter import ulog_csv
+from px4_log_tool.runners import ulog_csv
 from px4_log_tool.metadata_generator import generate_ulog_metadata
 
 
@@ -103,8 +103,21 @@ def generate_metadata(ctx, directory_address, filter):
     generate_ulog_metadata(ctx.obj.verbose, directory_address, filter)
 
 
+@click.command()
+@click.argument("directory_address", type=click.Path(exists=True))
+@click.pass_context
+def csv2db3(ctx, directory_address):
+    """
+    Convert and merge CSV files in a directory into ROS 2 bag DB3 files in DIRECTORY_ADDRESS.
+    """
+    if ctx.obj.verbose:
+        click.echo("Verbose mode enabled.")
+    click.echo(f"Converting CSV to ROS 2 bag DB3 in {directory_address}")
+
+
 # Adding commands to the CLI
 cli.add_command(ulog2csv)
+cli.add_command(csv2db3)
 cli.add_command(ulog2db3)
 cli.add_command(db32csv)
 cli.add_command(generate_metadata)
