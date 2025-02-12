@@ -7,7 +7,7 @@ from px4_log_tool.util.logger import log
 from px4_log_tool.util.tui import progress_bar
 from px4_log_tool.processing_modules.converter import convert_csv2ros2bag, convert_ulog2csv
 from px4_log_tool.processing_modules.merger import merge_csv
-from px4_log_tool.processing_modules.resampler import resample_data
+from px4_log_tool.processing_modules.resampler import resample_data, adjust_topic_rate
 
 import pandas as pd
 import yaml
@@ -177,6 +177,7 @@ def extract_filter(filter: str | None, verbose: bool = False):
         log("", verbosity=verbose, log_level=1)
         filter["bag_params"] = {
             "topic_prefix": "/fmu/out",
+            "topic_max_frequency_hz": 100,
             "capitalise_topics": False,
         }
     log("ROS 2 bag parameters:", verbosity=verbose, log_level=0)
@@ -186,7 +187,7 @@ def extract_filter(filter: str | None, verbose: bool = False):
     return filter
 
 
-def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[str]:
+def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[tuple[str,str]]:
     """
     Retrieves a list of `.ulog` files from the specified directory.
 
@@ -197,27 +198,27 @@ def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[str]:
     Returns:
     - list[str]: A list of tuples, where each tuple contains the file path and filename.
     """
-    ulog_files = []
+    ulog_files: list[tuple[str,str]] = []
     for root, _, files in os.walk(ulog_dir):
         for file in files:
             if file.split(".")[-1] == "ulg" or file.split(".")[-1] == "ulog":
                 ulog_files.append((root, file))
 
-    log(msg=f"Converting [{len(ulog_files)}] .ulog files to .csv.", verbosity=verbose, log_level=0)
+    log(msg=f"Converting [{len(ulog_files)}] .ulog files.", verbosity=verbose, log_level=0)
     return ulog_files
 
 
 def get_csv_dirs(csv_dir: str, verbose: bool = False) -> list[str]:
-    csv_dirs = []
+    csv_dirs: list[str] = []
     for root, subdirs, files in os.walk(csv_dir):
         if not subdirs:
             if all(file.endswith(".csv") for file in files):
                 csv_dirs.append(root)
-    log(msg=f"Converting [{len(csv_dirs)}] .csv directories into .cb3 ROS 2 bags.", verbosity=verbose, log_level=0)
+    log(msg=f"Converting [{len(csv_dirs)}] .csv directories.", verbosity=verbose, log_level=0)
     return csv_dirs
 
 
-def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, filter: dict, verbose: bool = False):
+def convert_dir_ulog_csv(ulog_files: list[tuple[str,str]], output_dir: str, filter: dict, verbose: bool = False):
     """
     Converts a list of `.ulog` files to `.csv` files in parallel.
 
@@ -227,7 +228,7 @@ def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, filter: dict, v
     - verbose (bool, optional): Whether to print verbose output. Defaults to False.
     """
 
-    processes = []
+    processes: list[Process] = []
     for file in ulog_files:
         process = Process(
             target=convert_ulog2csv,
@@ -338,3 +339,31 @@ def merge_csvs(output_dir: str, verbose: bool = False) -> pd.DataFrame:
     return unified_df
 
 
+def adjust_topics(directory_address:str, filter:dict, verbose: bool = False):
+
+    adjust_frequency: float = filter["bag_params"]["topic_max_frequency_hz"]
+    csv_dirs: list[str] = get_csv_dirs(csv_dir = directory_address, verbose = verbose)
+    
+    processes: list[Process] = []
+    for dir in csv_dirs:
+        for filename in os.listdir(dir):
+            if not filename.endswith(".csv"):
+                continue
+            filepath = os.path.join(dir, filename)
+
+            process = Process(
+                target=adjust_topic_rate,
+                args=(filepath, adjust_frequency, verbose),
+            )
+            processes.append(process)
+            process.start()
+    i = 0
+    total = len(processes)
+    log("Topic Rate Adjustment Progress:", verbosity=verbose, log_level=0, bold=True)
+    for process in processes:
+        process.join()
+        i += 1
+        progress_bar(i / total, verbose)
+    log("", verbosity=verbose, log_level=0, color=False, timestamped=False)
+
+    return

@@ -21,4 +21,5 @@ metadata_fields:
   - "yaw_lock"
 bag_params:
   topic_prefix: "/fmu/out"
+  topic_max_frequency_hz: 100
   capitalise_topics: False

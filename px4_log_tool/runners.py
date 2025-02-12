@@ -12,6 +12,7 @@ from px4_log_tool.util.components import (
     convert_dir_ulog_csv,
     merge_csvs,
     resample_unified,
+    adjust_topics,
 )
 import shutil
 
@@ -32,7 +33,7 @@ def ulog_csv(
 
     FILTER = extract_filter(filter_str=filter, verbose=verbose)
 
-    ulog_files = get_ulog_files(ulog_dir=ulog_dir, verbose=verbose)
+    ulog_files: list[tuple[str,str]] = get_ulog_files(ulog_dir=ulog_dir, verbose=verbose)
 
     if output_dir is None:
         output_dir = "./output_dir"
@@ -83,6 +84,25 @@ def csv_db3(
         capitalise_topics=FILTER["bag_params"]["capitalise_topics"],
         verbose=verbose,
     )
+    return
+
+
+def ulog_db3(
+    verbose: bool,
+    directory_address: str,
+    filter: str,
+    output_dir: str | None,
+):
+    global FILTER
+
+    if output_dir is None:
+        output_dir = "./output_dir"
+    ulog_csv(verbose=verbose, ulog_dir=directory_address, filter=filter, output_dir=output_dir)
+
+    log("ROS 2 Bag topics will be adjusted.", log_level=0, verbosity=verbose)
+    adjust_topics(verbose=verbose, directory_address=output_dir, filter=FILTER)
+
+    csv_db3(verbose=verbose, directory_address=output_dir, filter=filter, output_dir=f"{output_dir}_bags")
     return
 
 

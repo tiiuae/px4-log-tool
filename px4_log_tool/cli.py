@@ -1,8 +1,10 @@
+from tabnanny import verbose
 import click
 from px4_log_tool.runners import (
     ulog_csv,
     csv_db3,
-    generate_ulog_metadata
+    generate_ulog_metadata,
+    ulog_db3
 )
 
 
@@ -68,13 +70,19 @@ def ulog2csv(ctx, directory_address, resample, clean, merge, filter, output_dir)
     "-f", "--filter", type=click.Path(exists=True), help="Path to the filter YAML file."
 )
 @click.pass_context
-def ulog2db3(ctx, directory_address, filter):
+@click.option(
+    "-o",
+    "--output_dir",
+    type=click.Path(exists=False),
+    help="Create mirror directory tree of CSVs directory and populate with DB3 bags. Operation in-place if none provided.",
+)
+def ulog2db3(ctx, directory_address, filter, output_dir):
     """
     Convert ulog files to DB3 in DIRECTORY_ADDRESS using FILTER.
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
-
+    ulog_db3(verbose=ctx.obj.verbose, directory_address=directory_address, filter=filter, output_dir=output_dir)
 
 @click.command()
 @click.argument("directory_address", type=click.Path(exists=True))
@@ -103,7 +111,6 @@ def generate_metadata(ctx, directory_address, filter):
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
-    click.echo(f"Generating .json metadata in place in {directory_address} with filter: {filter}")
     generate_ulog_metadata(verbose=ctx.obj.verbose, directory_address=directory_address, filter=filter)
 
 
@@ -125,7 +132,6 @@ def csv2db3(ctx, directory_address, filter, output_dir):
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
-    click.echo(f"Converting CSV to ROS 2 bag DB3 in {directory_address}")
     csv_db3(verbose=ctx.obj.verbose, directory_address=directory_address, filter=filter, output_dir=output_dir)
 
 
