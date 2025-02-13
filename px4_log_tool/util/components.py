@@ -1,21 +1,16 @@
 #!/usr/bin python3
 import os
-import shutil
 from copy import deepcopy
 from multiprocessing import Process
 from typing import Any, Dict
 from px4_log_tool.util.logger import log
 from px4_log_tool.util.tui import progress_bar
+from px4_log_tool.processing_modules.converter import convert_csv2ros2bag, convert_ulog2csv
+from px4_log_tool.processing_modules.merger import merge_csv
+from px4_log_tool.processing_modules.resampler import resample_data, adjust_topic_rate
 
 import pandas as pd
 import yaml
-
-from px4_log_tool.processing_modules.converter import convert_ulog2csv
-from px4_log_tool.processing_modules.merger import merge_csv
-from px4_log_tool.processing_modules.resampler import resample_data
-
-FILTER = dict()
-
 
 def resample_unified(
     unified_df: pd.DataFrame,
@@ -122,7 +117,7 @@ def extract_filter(filter: str | None, verbose: bool = False):
     Returns:
     - None
     """
-    global FILTER
+    filter = dict()
 
     if filter is not None:
         with open(filter, "r") as f:
@@ -131,55 +126,68 @@ def extract_filter(filter: str | None, verbose: bool = False):
         FILTER = {}
 
     try:
-        _ = FILTER["whitelist_messages"]
+        _ = filter["whitelist_messages"]
     except KeyError:
-        log("Warning: Missing whitelist_messages in filter.yaml.", verbosity=verbose, log_level=1)
+        log(f"Warning: Missing whitelist_messages in {filter_str}.", verbosity=verbose, log_level=1)
         log("Using default values.", verbosity=verbose, log_level=1)
         log("", verbosity=verbose, log_level=1)
         FILTER["whitelist_messages"] = ["sensor_combined", "actuator_outputs"]
     log("Whitelisted topics are:", verbosity=verbose, log_level=0, bold=True)
-    for entry in FILTER["whitelist_messages"]:
+    for entry in filter["whitelist_messages"]:
         log(f"-- {entry}", verbosity=verbose, log_level=0)
 
     try:
-        _ = FILTER["blacklist_messages"]
+        _ = filter["blacklist_messages"]
     except KeyError:
-        log("Warning: Missing blacklist_headers in filter.yaml.", verbosity=verbose, log_level=1)
+        log(f"Warning: Missing blacklist_headers in {filter_str}.", verbosity=verbose, log_level=1)
         log("Using default values.", verbosity=verbose, log_level=1)
         log("", verbosity=verbose, log_level=1)
-        FILTER["blacklist_headers"] =[ "timestamp_sample", "device_id", "error_count"]
+        filter["blacklist_headers"] =[ "timestamp_sample", "device_id", "error_count"]
     log("Blacklisted headers are:", verbosity=verbose, log_level=0,bold=True)
-    for entry in FILTER["blacklist_headers"]:
+    for entry in filter["blacklist_headers"]:
         log(f"-- {entry}", verbosity=verbose, log_level=0)
 
     try:
-        _ = FILTER["resample_params"]["target_frequency_hz"]
-        _ = FILTER["resample_params"]["num_method"]
-        _ = FILTER["resample_params"]["cat_method"]
-        _ = FILTER["resample_params"]["interpolate_numerical"]
-        _ = FILTER["resample_params"]["interpolate_method"]
+        _ = filter["resample_params"]["target_frequency_hz"]
+        _ = filter["resample_params"]["num_method"]
+        _ = filter["resample_params"]["cat_method"]
+        _ = filter["resample_params"]["interpolate_numerical"]
+        _ = filter["resample_params"]["interpolate_method"]
     except KeyError:
-        log("Warning: Incomplete resampling parameters provided in filter.yaml.", verbosity=verbose, log_level=1)
+        log(f"Warning: Incomplete resampling parameters provided in {filter_str}.", verbosity=verbose, log_level=1)
         log("Using default values.", verbosity=verbose, log_level=1)
         log("", verbosity=verbose, log_level=1)
-        FILTER["resample_params"] = {
+        filter["resample_params"] = {
             "target_frequency_hz": 10,
             "num_method": "mean",
             "cat_method": "ffill",
             "interpolate_numerical": True,
             "interpolate_method": "linear",
         }
-
     log("Resampling parameters:", verbosity=verbose, log_level=0)
-    log(f"-- target_frequency_hz: {FILTER['resample_params']['target_frequency_hz']}", verbosity=verbose, log_level=0)
-    log(f"-- num_method: {FILTER['resample_params']['num_method']}", verbosity=verbose, log_level=0)
-    log(f"-- cat_method: {FILTER['resample_params']['cat_method']}", verbosity=verbose, log_level=0)
-    log(f"-- target_frequency_hz: {FILTER['resample_params']['interpolate_numerical']}", verbosity=verbose, log_level=0)
-    log(f"-- interpolate_method: {FILTER['resample_params']['interpolate_method']}", verbosity=verbose, log_level=0)
-    return
+    for entry in filter["resample_params"]:
+        log(f"-- {entry}", verbosity=verbose, log_level=0)
+
+    try:
+        _ = filter["bag_params"]["topic_prefix"]
+        _ = filter["bag_params"]["capitalise_topics"]
+    except KeyError:
+        log(f"Warning: No ROS 2 bag parameters provided in {filter_str}.", verbosity=verbose, log_level=1)
+        log("Using default values.", verbosity=verbose, log_level=1)
+        log("", verbosity=verbose, log_level=1)
+        filter["bag_params"] = {
+            "topic_prefix": "/fmu/out",
+            "topic_max_frequency_hz": 100,
+            "capitalise_topics": False,
+        }
+    log("ROS 2 bag parameters:", verbosity=verbose, log_level=0)
+    for entry in filter["bag_params"]:
+        log(f"-- {entry}", verbosity=verbose, log_level=0)
+
+    return filter
 
 
-def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[str]:
+def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[tuple[str,str]]:
     """
     Retrieves a list of `.ulog` files from the specified directory.
 
@@ -190,17 +198,27 @@ def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[str]:
     Returns:
     - list[str]: A list of tuples, where each tuple contains the file path and filename.
     """
-    ulog_files = []
+    ulog_files: list[tuple[str,str]] = []
     for root, _, files in os.walk(ulog_dir):
         for file in files:
             if file.split(".")[-1] == "ulg" or file.split(".")[-1] == "ulog":
                 ulog_files.append((root, file))
 
-    log(msg=f"Converting [{len(ulog_files)}] .ulog files to .csv.", verbosity=verbose, log_level=0)
+    log(msg=f"Converting [{len(ulog_files)}] .ulog files.", verbosity=verbose, log_level=0)
     return ulog_files
 
 
-def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, verbose: bool = False):
+def get_csv_dirs(csv_dir: str, verbose: bool = False) -> list[str]:
+    csv_dirs: list[str] = []
+    for root, subdirs, files in os.walk(csv_dir):
+        if not subdirs:
+            if all(file.endswith(".csv") for file in files):
+                csv_dirs.append(root)
+    log(msg=f"Converting [{len(csv_dirs)}] .csv directories.", verbosity=verbose, log_level=0)
+    return csv_dirs
+
+
+def convert_dir_ulog_csv(ulog_files: list[tuple[str,str]], output_dir: str, filter: dict, verbose: bool = False):
     """
     Converts a list of `.ulog` files to `.csv` files in parallel.
 
@@ -209,18 +227,17 @@ def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, verbose: bool =
     - output_dir (str): The output directory for the converted `.csv` files.
     - verbose (bool, optional): Whether to print verbose output. Defaults to False.
     """
-    global FILTER
 
-    processes = []
+    processes: list[Process] = []
     for file in ulog_files:
         process = Process(
             target=convert_ulog2csv,
             args=(
                 file[0],
                 file[1],
-                FILTER["whitelist_messages"],
+                filter["whitelist_messages"],
                 os.path.join(output_dir, file[0]),
-                FILTER["blacklist_headers"],
+                filter["blacklist_headers"],
                 ",",
                 None,
                 None,
@@ -240,6 +257,35 @@ def convert_dir_ulog_csv(ulog_files: list[str], output_dir: str, verbose: bool =
         progress_bar(i / total, verbose)
     log("", verbosity=verbose, log_level=0, color=False,timestamped=False)
     return
+
+
+def convert_dir_csv_db3(csv_dirs: list[str], output_dir: str, topic_prefix: str, capitalise_topics: bool, verbose: bool = False):
+
+    processes = []
+    for dir in csv_dirs:
+        process = Process(
+            target=convert_csv2ros2bag,
+            args=(
+                dir,
+                os.path.join(output_dir, dir),
+                topic_prefix,
+                capitalise_topics,
+                verbose
+            )
+        )
+        processes.append(process)
+        process.start()
+
+    i = 0
+    total = len(processes)
+    log("Conversion Progress:", verbosity=verbose, log_level=0,bold=True)
+    for process in processes:
+        process.join()
+        i += 1
+        progress_bar(i / total, verbose)
+    log("", verbosity=verbose, log_level=0, color=False,timestamped=False)
+    return
+
 
 def merge_csvs(output_dir: str, verbose: bool = False) -> pd.DataFrame:
     """
@@ -292,35 +338,32 @@ def merge_csvs(output_dir: str, verbose: bool = False) -> pd.DataFrame:
     unified_df.to_csv("unified.csv", index=False)
     return unified_df
 
-def ulog_csv(
-    verbose: bool,
-    ulog_dir: str,
-    filter: str,
-    output_dir: str | None,
-    merge: bool = False,
-    clean: bool = False,
-    resample: bool = False,
-):
-    global FILTER
 
-    extract_filter(filter=filter, verbose=verbose)
+def adjust_topics(directory_address:str, filter:dict, verbose: bool = False):
 
-    ulog_files = get_ulog_files(ulog_dir=ulog_dir, verbose=verbose)
+    adjust_frequency: float = filter["bag_params"]["topic_max_frequency_hz"]
+    csv_dirs: list[str] = get_csv_dirs(csv_dir = directory_address, verbose = verbose)
+    
+    processes: list[Process] = []
+    for dir in csv_dirs:
+        for filename in os.listdir(dir):
+            if not filename.endswith(".csv"):
+                continue
+            filepath = os.path.join(dir, filename)
 
-    if output_dir is None:
-        output_dir = "./output_dir"
-    convert_dir_ulog_csv(ulog_files=ulog_files, output_dir=output_dir, verbose=verbose)
+            process = Process(
+                target=adjust_topic_rate,
+                args=(filepath, adjust_frequency, verbose),
+            )
+            processes.append(process)
+            process.start()
+    i = 0
+    total = len(processes)
+    log("Topic Rate Adjustment Progress:", verbosity=verbose, log_level=0, bold=True)
+    for process in processes:
+        process.join()
+        i += 1
+        progress_bar(i / total, verbose)
+    log("", verbosity=verbose, log_level=0, color=False, timestamped=False)
 
-    if merge:
-        unified_df = merge_csvs(output_dir=output_dir, verbose=verbose)
-        msg_reference = get_msg_reference(verbose=verbose)
-        if resample and msg_reference is not None:
-            _ = resample_unified(unified_df=unified_df, msg_reference=msg_reference, resample_params=FILTER['resample_params'], in_place=True, verbose=verbose)
-
-    if resample and not merge:
-        log("Cannot resample without merging!", log_level=2, verbosity=verbose)
-
-    if clean:
-        log("Cleaning directory and breadcrumbs.", verbosity=verbose, log_level=0)
-        shutil.rmtree(output_dir)
     return

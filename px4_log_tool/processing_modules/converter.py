@@ -24,7 +24,7 @@ def convert_ulog2csv(
     time_s: float | None = None,
     time_e: float | None = None,
     disable_str_exceptions: bool = False,
-    verbose: bool = True
+    verbose: bool = False,
     ) -> Dict:
     """
     Converts a PX4 ULog file to CSV files.
@@ -33,15 +33,16 @@ def convert_ulog2csv(
     Filtering, field exclusion, and time range extraction are supported.
 
     Args:
-        directory_address (str): Directory path of the ULog file.
-        ulog_file_name (str): Name of the ULog file to convert.
-        messages (List[str]): List of message names to include (all if None).
-        output (str): Output directory for CSV files (defaults to current directory).
-        blacklist (List[str]): List of field names to exclude.
-        delimiter (str): CSV delimiter (default: ",").
-        time_s (float): Start time (in seconds) for extraction (defaults to log start).
-        time_e (float): End time (in seconds) for extraction (defaults to log end).
-        disable_str_exceptions (bool): If True, disables string conversion exceptions.
+    - directory_address (str): Directory path of the ULog file.
+    - ulog_file_name (str): Name of the ULog file to convert.
+    - messages (List[str]): List of message names to include (all if None).
+    - output (str): Output directory for CSV files (defaults to current directory).
+    - blacklist (List[str]): List of field names to exclude.
+    - delimiter (str): CSV delimiter (default: ",").
+    - time_s (float): Start time (in seconds) for extraction (defaults to log start).
+    - time_e (float): End time (in seconds) for extraction (defaults to log end).
+    - disable_str_exceptions (bool): If True, disables string conversion exceptions.
+    - verbose (bool): Verbosity of logging.
     """
 
     ulog_file_name = os.path.join(directory_address, ulog_file_name)
@@ -137,8 +138,10 @@ def convert_ulog2csv(
 
 def convert_csv2ros2bag(
     directory_address: str,
+    output_dir: str,
     topic_prefix: str = "/fmu/out",
-    capitalise_topics: bool = False
+    capitalise_topics: bool = False,
+    verbose: bool = False
     ) -> None:
     """
     Converts CSV files to a ROS 2 bag file.
@@ -149,22 +152,21 @@ def convert_csv2ros2bag(
     topics they represent, and the data will be serialized accordingly.
 
     Args:
-        directory_address (str): Directory path containing the CSV files.
-        topic_prefix (str): Prefix to the topics in the bag file.
-
-    Raises:
-        ValueError: If a field in the CSV file does not match any field in the corresponding ROS message type.
+    - directory_address (str): Directory path containing the CSV files.
+    - topic_prefix (str): Prefix to the topics in the bag file.
+    - capitalise_topics (bool): For compatibility with snake and camelcase topics.
+    - verbose (bool): Verbosity of logging.
     """
     try:
         import rosbag2_py
         import importlib
-        import px4_msgs.msg # pylint: disable=unused-import
+        import px4_msgs.msg
         from rclpy.serialization import serialize_message
     except Exception as e:
-        if e == ImportError or e == ModuleNotFoundError:
-            print("ERROR: Missing required ROS 2 packages. Skipping conversion to ROS 2 bag.")
+        if e is not ImportError or e is not ModuleNotFoundError:
+            log("Missing required ROS 2 packages. Make sure that the ROS 2 environment is sourced. Skipping conversion to ROS 2 bag.", verbosity=verbose, log_level=2)
         else:
-            print("ERROR")
+            log("Missing required ROS 2 px4_msgs library. Make sure that it is sourced. Skipping conversion to ROS 2 bag.", verbosity=verbose, log_level=2)
         return
 
     def set_msg_field(msg, field_name, value):
@@ -199,7 +201,7 @@ def convert_csv2ros2bag(
         bag_name = directory_address.split("/")[-1]
 
     storage_options = rosbag2_py._storage.StorageOptions(
-        uri=f"{directory_address}/{bag_name}",
+        uri=f"{output_dir}/{bag_name}",
         storage_id="sqlite3",
     )
     converter_options = rosbag2_py._storage.ConverterOptions("", "")
@@ -207,7 +209,7 @@ def convert_csv2ros2bag(
 
     csv_files = [f for f in os.listdir(directory_address) if f.endswith(".csv")]
     if len(csv_files) == 0:
-        print("WARNING: Directory does not have any .csv files. Skipping conversion to ROS 2 bag.")
+        log("Directory does not have any .csv files. Skipping conversion to ROS 2 bag.", verbosity=verbose, log_level=2)
         return
 
     topic_dict = {}
@@ -231,13 +233,17 @@ def convert_csv2ros2bag(
 
     for base_name, (topic_name, msg_type) in topic_dict.items():
         df = pd.read_csv(os.path.join(directory_address, f"{base_name}.csv"))
-        msg_class = getattr(importlib.import_module("px4_msgs.msg"), msg_type)
+        try:
+            msg_class = getattr(importlib.import_module("px4_msgs.msg"), msg_type)
+        except AttributeError:
+            continue
 
         for _, row in df.iterrows():
             msg = msg_class()
             for field in row.index:
                 set_msg_field(msg, field, row[field])
             writer.write(topic_name, serialize_message(msg), msg.timestamp * 1000)
+
 
 # TODO This needs to be refactored
 def px4_mcap_to_csv(mcap_dir: str) -> None:

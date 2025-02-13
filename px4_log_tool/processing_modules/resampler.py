@@ -1,7 +1,8 @@
+import os
+import numpy as np
 import pandas as pd
 import warnings
-from typing import List
-
+from px4_log_tool.util.logger import log
 
 def resample_data(
         df: pd.DataFrame,
@@ -10,8 +11,8 @@ def resample_data(
         cat_method: str = "last",
         interpolate_numerical: bool = True,
         interpolate_method: str = "linear",
-        num_columns: List[str] = None,
-        cat_columns: List[str] = None,
+        num_columns: list[str] | None = None,
+        cat_columns: list[str] | None = None,
         verbose: bool = False,
 ) -> pd.DataFrame:
     """
@@ -136,3 +137,26 @@ def print_column_frequencies(df):
     print(f"Overall mean frequency of DataFrame: {overall_mean_frequency} Hz")
 
     return frequency_dict
+
+
+def adjust_topic_rate(csv_file:str, max_frequency:float = 100, verbose: bool = False):
+    df = pd.read_csv(csv_file)
+    df = df.sort_values("timestamp").reset_index(drop=True)
+
+    timestamps = df["timestamp"].to_numpy()
+    if len(timestamps) < 2:
+        log(f"Skipping topic rate adjustment of {csv_file}.", verbosity=verbose, log_level=1)
+        return
+
+    time_diffs = np.diff(timestamps) / 1e6
+    avg_period = np.mean(time_diffs)
+
+    original_frequency = 1 / avg_period
+
+    if original_frequency < max_frequency:
+        return
+
+    step_size = int(round(original_frequency / max_frequency))
+    downsampled_df = df.iloc[::step_size].copy()
+    downsampled_df.to_csv(csv_file, index=False)
+    return
