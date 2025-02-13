@@ -51,7 +51,7 @@ def merge_csv(
     merged_df.sort_values(by="timestamp", inplace=True)
 
     mission_name_list = os.path.normpath(root).split(os.sep)
-    mission_name = "_".join(mission_name_list)
+    mission_name = "/".join(mission_name_list)
     merged_df["mission_name"] = mission_name
 
     preamble = ["mission_name", "timestamp"]
