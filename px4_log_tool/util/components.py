@@ -107,7 +107,7 @@ def get_msg_reference(verbose: bool = False):
         return None
 
 
-def extract_filter(filter: str | None, verbose: bool = False):
+def extract_filter(filter_str: str | None, verbose: bool = False):
     """Extracts filter parameters from a YAML file.
 
     Args:
@@ -119,11 +119,11 @@ def extract_filter(filter: str | None, verbose: bool = False):
     """
     filter = dict()
 
-    if filter is not None:
-        with open(filter, "r") as f:
-            FILTER = yaml.safe_load(f)
+    if type(filter_str) is str:
+        with open(filter_str, "r") as f:
+            filter = yaml.safe_load(f)
     else:
-        FILTER = {}
+        filter = {}
 
     try:
         _ = filter["whitelist_messages"]
@@ -131,7 +131,7 @@ def extract_filter(filter: str | None, verbose: bool = False):
         log(f"Warning: Missing whitelist_messages in {filter_str}.", verbosity=verbose, log_level=1)
         log("Using default values.", verbosity=verbose, log_level=1)
         log("", verbosity=verbose, log_level=1)
-        FILTER["whitelist_messages"] = ["sensor_combined", "actuator_outputs"]
+        filter["whitelist_messages"] = ["sensor_combined", "actuator_outputs"]
     log("Whitelisted topics are:", verbosity=verbose, log_level=0, bold=True)
     for entry in filter["whitelist_messages"]:
         log(f"-- {entry}", verbosity=verbose, log_level=0)
