@@ -48,10 +48,11 @@ def merge_csv(
 
         merged_df = pd.merge(merged_df, data_frame, on="timestamp", how="outer")
 
-    # This gets you the label
     merged_df.sort_values(by="timestamp", inplace=True)
 
-    merged_df["mission_name"] = os.path.basename(root)
+    mission_name_list = os.path.normpath(root).split(os.sep)
+    mission_name = "_".join(mission_name_list)
+    merged_df["mission_name"] = mission_name
 
     preamble = ["mission_name", "timestamp"]
     body = sorted([col for col in merged_df.columns if col not in preamble])
