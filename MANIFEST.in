@@ -1,1 +1,4 @@
-include px4_log_tool/msg_reference.csv
+include requirements.txt
+include filter.yaml
+include environment.yml  # If you want it included in the distribution
+graft px4_log_tool
