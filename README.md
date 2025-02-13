@@ -24,13 +24,13 @@ pip install -e .
 Currently only Bash, Zsh and Fish shells are supported. After installing the CLI tool:
 
 ```bash
-_PX4_LOG_TOOL_COMPLETION=bash_source px4-log-tool > ~/.px4_log_tool_completion.bash
+_PX4_LOG_TOOL_COMPLETE=bash_source px4-log-tool > ~/.px4_log_tool_completion.bash
 ```
 ```bash
-_PX4_LOG_TOOL_COMPLETION=zsh_source px4-log-tool > ~/.px4_log_tool_completion.zsh
+_PX4_LOG_TOOL_COMPLETE=zsh_source px4-log-tool > ~/.px4_log_tool_completion.zsh
 ```
 ```bash
-_PX4_LOG_TOOL_COMPLETION=fish_source px4-log-tool > ~/.px4_log_tool_completion.fish
+_PX4_LOG_TOOL_COMPLETE=fish_source px4-log-tool > ~/.px4_log_tool_completion.fish
 ```
 
 Then source the generated completion shell file into you `.bashrc`, `.zshrc` or `config.fish`. Example:
