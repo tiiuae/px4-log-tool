@@ -338,9 +338,9 @@ def convert_ros2bag2csv(bag_file_address: str, verbose: bool = False):
 
             # store header and attribute rows
             attributes = []
-            header_row = []
+            header_row = ["ros_timestamp"]
             for key in dir(deserialize_message(messages[0], msg_type)):
-                if key[0] != "_" and key.islower():
+                if key[0] != "_" and key.islower() and key != "get_fields_and_field_types":
                     attributes.append(key)
                     try:
                         attr_size = getattr(deserialize_message(messages[0], msg_type), key)
