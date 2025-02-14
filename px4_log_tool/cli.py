@@ -1,6 +1,8 @@
 from tabnanny import verbose
 import click
+from px4_log_tool.processing_modules.converter import convert_ros2bag2csv
 from px4_log_tool.runners import (
+    db3_csv,
     ulog_csv,
     csv_db3,
     generate_ulog_metadata,
@@ -96,7 +98,7 @@ def db32csv(ctx, directory_address, filter):
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
-    click.echo(f"Converting DB3 to CSV in {directory_address} using filter: {filter}")
+    db3_csv(directory_address=directory_address, filter=filter, verbose=ctx.obj.verbose)
 
 
 @click.command()

@@ -1,14 +1,13 @@
 #!/usr/bin python3
 
 import numpy as np
-import importlib
+import sqlite3
+import csv
 import os
 import re
 import pandas as pd
-import yaml
 from collections import Counter
 from copy import deepcopy
-from glob import glob
 from pyulog import ULog
 from typing import Dict, List
 from px4_log_tool.util.logger import log
@@ -25,7 +24,7 @@ def convert_ulog2csv(
     time_e: float | None = None,
     disable_str_exceptions: bool = False,
     verbose: bool = False,
-    ) -> Dict:
+) -> Dict:
     """
     Converts a PX4 ULog file to CSV files.
 
@@ -52,7 +51,13 @@ def convert_ulog2csv(
         ulog = ULog(ulog_file_name, msg_filter, disable_str_exceptions)
         data = ulog.data_list
     except Exception:
-        log("Issue with converting file " + ulog_file_name + ". It is most likely due to its filetype or integrity.", verbosity=verbose, log_level=1)
+        log(
+            "Issue with converting file "
+            + ulog_file_name
+            + ". It is most likely due to its filetype or integrity.",
+            verbosity=verbose,
+            log_level=1,
+        )
         return {}
 
     output_file_prefix = ulog_file_name
@@ -73,12 +78,14 @@ def convert_ulog2csv(
     # Mark duplicated
     if messages is not None:
         counts = Counter(
-            [d.name.replace("/", "_") for d in data if d.name.replace("/", "_") in messages]
+            [
+                d.name.replace("/", "_")
+                for d in data
+                if d.name.replace("/", "_") in messages
+            ]
         )
     else:
-        counts = Counter(
-            [d.name.replace("/", "_") for d in data]
-        )
+        counts = Counter([d.name.replace("/", "_") for d in data])
     redundant_msgs = [string for string, count in counts.items() if count > 1]
     data_frame_dict = {}
 
@@ -94,7 +101,6 @@ def convert_ulog2csv(
                 output_file_prefix, d.name.replace("/", "_"), d.multi_id
             )
         with open(output_file_name, "w", encoding="utf-8") as csvfile:
-
             # use same field order as in the log, except for the timestamp
             data_keys = [f.field_name for f in d.field_data]
             data_keys.remove("timestamp")
@@ -132,7 +138,9 @@ def convert_ulog2csv(
                     if k != last_elem:
                         csvfile.write(delimiter)
                 csvfile.write("\n")
-        data_frame_dict[output_file_name.split("/")[-1].split(".")[0]] = pd.read_csv(output_file_name)
+        data_frame_dict[output_file_name.split("/")[-1].split(".")[0]] = pd.read_csv(
+            output_file_name
+        )
     return data_frame_dict
 
 
@@ -141,8 +149,8 @@ def convert_csv2ros2bag(
     output_dir: str,
     topic_prefix: str = "/fmu/out",
     capitalise_topics: bool = False,
-    verbose: bool = False
-    ) -> None:
+    verbose: bool = False,
+) -> None:
     """
     Converts CSV files to a ROS 2 bag file.
 
@@ -164,9 +172,17 @@ def convert_csv2ros2bag(
         from rclpy.serialization import serialize_message
     except Exception as e:
         if e is not ImportError or e is not ModuleNotFoundError:
-            log("Missing required ROS 2 packages. Make sure that the ROS 2 environment is sourced. Skipping conversion to ROS 2 bag.", verbosity=verbose, log_level=2)
+            log(
+                "Missing required ROS 2 packages. Make sure that the ROS 2 environment is sourced. Skipping conversion to ROS 2 bag.",
+                verbosity=verbose,
+                log_level=2,
+            )
         else:
-            log("Missing required ROS 2 px4_msgs library. Make sure that it is sourced. Skipping conversion to ROS 2 bag.", verbosity=verbose, log_level=2)
+            log(
+                "Missing required ROS 2 px4_msgs library. Make sure that it is sourced. Skipping conversion to ROS 2 bag.",
+                verbosity=verbose,
+                log_level=2,
+            )
         return
 
     def set_msg_field(msg, field_name, value):
@@ -175,21 +191,25 @@ def convert_csv2ros2bag(
         indices, and ensuring type compatibility.
         """
 
-        if '_' in field_name and field_name.split('_')[-1].isdigit():
-            field_base = '_'.join(field_name.split('_')[:-1])
-            index = int(field_name.split('_')[-1])
+        if "_" in field_name and field_name.split("_")[-1].isdigit():
+            field_base = "_".join(field_name.split("_")[:-1])
+            index = int(field_name.split("_")[-1])
             if hasattr(msg, field_base):
                 array_field = getattr(msg, field_base)
                 if isinstance(array_field, (list, np.ndarray)):
                     array_field[index] = type(array_field[index])(value)
                 else:
-                    raise ValueError(f"Field {field_base} is not an array in message type {type(msg).__name__}")
+                    raise ValueError(
+                        f"Field {field_base} is not an array in message type {type(msg).__name__}"
+                    )
         else:
             if hasattr(msg, field_name):
                 current_type = type(getattr(msg, field_name))
                 setattr(msg, field_name, current_type(value))
             else:
-                raise ValueError(f"Message type {type(msg).__name__} has no field {field_name}")
+                raise ValueError(
+                    f"Message type {type(msg).__name__} has no field {field_name}"
+                )
 
     writer = rosbag2_py.SequentialWriter()
 
@@ -209,7 +229,11 @@ def convert_csv2ros2bag(
 
     csv_files = [f for f in os.listdir(directory_address) if f.endswith(".csv")]
     if len(csv_files) == 0:
-        log("Directory does not have any .csv files. Skipping conversion to ROS 2 bag.", verbosity=verbose, log_level=2)
+        log(
+            "Directory does not have any .csv files. Skipping conversion to ROS 2 bag.",
+            verbosity=verbose,
+            log_level=2,
+        )
         return
 
     topic_dict = {}
@@ -222,12 +246,12 @@ def convert_csv2ros2bag(
             topic_name = f"{topic_prefix}/{name[:-2]}/f_{base_name[-1]}"
         else:
             topic_name = f"{topic_prefix}/{name}"
-        msg_type = ''.join(part.capitalize() for part in re.sub(r'_\d+', '', base_name).split("_"))
+        msg_type = "".join(
+            part.capitalize() for part in re.sub(r"_\d+", "", base_name).split("_")
+        )
         topic_dict[base_name] = (topic_name, msg_type)
         topic_info = rosbag2_py._storage.TopicMetadata(
-            name=topic_name,
-            type=f"px4_msgs/msg/{msg_type}",
-            serialization_format="cdr"
+            name=topic_name, type=f"px4_msgs/msg/{msg_type}", serialization_format="cdr"
         )
         writer.create_topic(topic_info)
 
@@ -245,84 +269,207 @@ def convert_csv2ros2bag(
             writer.write(topic_name, serialize_message(msg), msg.timestamp * 1000)
 
 
-# TODO This needs to be refactored
-def px4_mcap_to_csv(mcap_dir: str) -> None:
-    """
-    Convert PX4 MCAP files to CSV format.
-
-    Args:
-        mcap_dir (str): Path to the directory containing MCAP directories.
-    Raises:
-
-        FileNotFoundError: If no MCAP files are found in the specified directory.
-    """
-    import px4_msgs.msg
-    from mcap_ros2.reader import read_ros2_messages
-    from rosidl_runtime_py import message_to_ordereddict
-
+def convert_ros2bag2csv(bag_file_address: str, verbose: bool = False):
     try:
-        mcap_filename = glob(os.path.join(mcap_dir, "*.mcap"))[0]
-        metadata = glob(os.path.join(mcap_dir, "*.yaml"))[0]
-    except IndexError:
-        print(f"No MCAP files found in {mcap_dir}")
+        import px4_msgs.msg
+        from rosidl_runtime_py.utilities import get_message
+        from rclpy.serialization import deserialize_message
+    except Exception as e:
+        if e is not ImportError or e is not ModuleNotFoundError:
+            log(
+                "Missing required ROS 2 packages. Make sure that the ROS 2 environment is sourced. Skipping conversion to ROS 2 bag.",
+                verbosity=verbose,
+                log_level=2,
+            )
+        else:
+            log(
+                "Missing required ROS 2 px4_msgs library. Make sure that it is sourced. Skipping conversion to ROS 2 bag.",
+                verbosity=verbose,
+                log_level=2,
+            )
         return
 
-    with open(metadata, "r") as file:
-        metadata = yaml.safe_load(file)
+    files: list[str] = os.listdir(bag_file_address)
+    rosbag_db: str | None = None
+    for file in files:
+        if file.endswith(".db3"):
+            rosbag_db = file
+    if rosbag_db is None:
+        return
+    
+    conn = sqlite3.connect(os.path.join(bag_file_address, rosbag_db))
+    c = conn.cursor()
+    topic_names: list[str] = []
+    topic_types: list[str] = []
+    topic_id = []
+    records = c.execute("SELECT * from({})".format("topics")).fetchall()
+    for row in records:
+        if row[1] == "/rosout" or row[1] == "/parameter_events":
+            topic_names.append("")
+            topic_types.append("")
+            topic_id.append(None)
+        else:
+            topic_names.append(row[1])
+            topic_types.append(row[2])
+            topic_id.append(row[0])
 
-    msg_df = {}
-    msg_rosdict = {}
-    msg_csvstr = {}
+    msg_records = c.execute("SELECT * from({})".format("messages")).fetchall()
 
-    for i in range(len(metadata["rosbag2_bagfile_information"]["topics_with_message_count"])):
-        msg_addr = metadata["rosbag2_bagfile_information"]["topics_with_message_count"][i]["topic_metadata"]["type"]
+    for i in range(len(topic_names)):
+        if topic_names[i] == "":
+            continue
+        time = []
+        count = 0
+        messages = []
+        msg_type = get_message(topic_types[i])
+        for row in msg_records:
+            if topic_id[i] == row[1]:
+                count += 1
+                time.append(row[2])
+                messages.append(row[3])
+        if len(messages) < 1:
+            continue
 
-        msg_addr = msg_addr.split("/")
+        os.makedirs(os.path.join(bag_file_address , "topic_csvs"), exist_ok=True)
+        csv_file_name: str = topic_names[i].replace("/",".")[1:]
+        with open(f"{bag_file_address }/topic_csvs/{csv_file_name}.csv", "w", newline="") as csvfile:
+            # Create a CSV writer
+            csv_writer = csv.writer(csvfile)
 
-        module = importlib.import_module(msg_addr[0])
-        message_package = getattr(module, msg_addr[1])
-        message = getattr(message_package, msg_addr[2])
+            # store header and attribute rows
+            attributes = []
+            header_row = []
+            for key in dir(deserialize_message(messages[0], msg_type)):
+                if key[0] != "_" and key.islower():
+                    attributes.append(key)
+                    try:
+                        attr_size = getattr(deserialize_message(messages[0], msg_type), key)
+                        if len(attr_size) > 0:
+                            for i in range(len(attr_size)):
+                                header_row.append(f"{key}_{i}")
+                            else:
+                                header_row.append(f"{key}_0")
+                    except Exception:
+                        header_row.append(key)
 
-        empty_msg_dict = message_to_ordereddict(message())
-        msg_rosdict[message().__class__.__name__] = empty_msg_dict
+            csv_writer.writerow(header_row)
 
-        header = []
-        for sub_key in list(empty_msg_dict.keys()):
-            if sub_key == 'timestamp':
-                header.append(sub_key)
-            else:
-                try:
-                    for j in range(len(empty_msg_dict[sub_key])):
-                        header.append(sub_key + f"_{j}")
-                except TypeError:
-                    header.append(f"{sub_key}")
-        header = ",".join(header) + "\n"
+            # Write rows
+            for timestamp, message in zip(time, messages):
+                deserialized_msg = deserialize_message(message, msg_type)
+                
+                row = []
+                row.append(timestamp)
+                for key in attributes:
+                    try:
+                        attr_size = getattr(deserialized_msg, key)
+                        if len(attr_size) > 0:
+                            for i in range(len(attr_size)):
+                                row.append(getattr(deserialized_msg, key)[i])
+                            else:
+                                row.append(getattr(deserialized_msg, key)[0])
+                    except Exception:
+                        row.append(getattr(deserialized_msg, key))
+                csv_writer.writerow(row)
 
-        msg_csvstr[message().__class__.__name__] = header
-
-    i = 0
-    try:
-        for msg in read_ros2_messages(mcap_filename):
-            msg_class = msg.ros_msg.__class__.__name__
-
-            try:
-                current_line = ",".join([f"{msg.ros_msg.__getattribute__(key)}" for key in list(msg_rosdict[msg_class].keys())]) + "\n"
-                current_line = current_line.replace("[", "")
-                current_line = current_line.replace("]", "")
-                current_line = current_line.replace(", ", ",")
-                msg_csvstr[msg_class] += current_line
-            except Exception as _:
-                continue
-
-        for key in list(msg_csvstr.keys()):
-            dat = [x.split(",") for x in msg_csvstr[key].strip("\n").split("\n")]
-            msg_df[key] = pd.DataFrame(dat)
-            msg_df[key] = msg_df[key].T.set_index(0, drop=True).T
-    except Exception as e:
-        print(f"Message versions probably aren't matching. Confirm if message fields are matching: {e}")
-
-    for key in list(msg_df.keys()):
-        dumpfile = f"{mcap_dir}{key}.csv"
-        msg_df[key].to_csv(dumpfile, index=False)
-
-    return
+    conn.close()
+            
+## TODO: REFACTOR
+# import importlib
+# import yaml
+# from glob import glob
+# 
+# def px4_mcap_to_csv(mcap_dir: str) -> None:
+#     """
+#     Convert PX4 MCAP files to CSV format.
+#
+#     Args:
+#         mcap_dir (str): Path to the directory containing MCAP directories.
+#     Raises:
+#
+#         FileNotFoundError: If no MCAP files are found in the specified directory.
+#     """
+#     import px4_msgs.msg
+#     from mcap_ros2.reader import read_ros2_messages
+#     from rosidl_runtime_py import message_to_ordereddict
+#
+#     try:
+#         mcap_filename = glob(os.path.join(mcap_dir, "*.mcap"))[0]
+#         metadata = glob(os.path.join(mcap_dir, "*.yaml"))[0]
+#     except IndexError:
+#         print(f"No MCAP files found in {mcap_dir}")
+#         return
+#
+#     with open(metadata, "r") as file:
+#         metadata = yaml.safe_load(file)
+#
+#     msg_df = {}
+#     msg_rosdict = {}
+#     msg_csvstr = {}
+#
+#     for i in range(
+#         len(metadata["rosbag2_bagfile_information"]["topics_with_message_count"])
+#     ):
+#         msg_addr = metadata["rosbag2_bagfile_information"]["topics_with_message_count"][
+#             i
+#         ]["topic_metadata"]["type"]
+#
+#         msg_addr = msg_addr.split("/")
+#
+#         module = importlib.import_module(msg_addr[0])
+#         message_package = getattr(module, msg_addr[1])
+#         message = getattr(message_package, msg_addr[2])
+#
+#         empty_msg_dict = message_to_ordereddict(message())
+#         msg_rosdict[message().__class__.__name__] = empty_msg_dict
+#
+#         header = []
+#         for sub_key in list(empty_msg_dict.keys()):
+#             if sub_key == "timestamp":
+#                 header.append(sub_key)
+#             else:
+#                 try:
+#                     for j in range(len(empty_msg_dict[sub_key])):
+#                         header.append(sub_key + f"_{j}")
+#                 except TypeError:
+#                     header.append(f"{sub_key}")
+#         header = ",".join(header) + "\n"
+#
+#         msg_csvstr[message().__class__.__name__] = header
+#
+#     i = 0
+#     try:
+#         for msg in read_ros2_messages(mcap_filename):
+#             msg_class = msg.ros_msg.__class__.__name__
+#
+#             try:
+#                 current_line = (
+#                     ",".join(
+#                         [
+#                             f"{msg.ros_msg.__getattribute__(key)}"
+#                             for key in list(msg_rosdict[msg_class].keys())
+#                         ]
+#                     )
+#                     + "\n"
+#                 )
+#                 current_line = current_line.replace("[", "")
+#                 current_line = current_line.replace("]", "")
+#                 current_line = current_line.replace(", ", ",")
+#                 msg_csvstr[msg_class] += current_line
+#             except Exception as _:
+#                 continue
+#
+#         for key in list(msg_csvstr.keys()):
+#             dat = [x.split(",") for x in msg_csvstr[key].strip("\n").split("\n")]
+#             msg_df[key] = pd.DataFrame(dat)
+#             msg_df[key] = msg_df[key].T.set_index(0, drop=True).T
+#     except Exception as e:
+#         print(
+#             f"Message versions probably aren't matching. Confirm if message fields are matching: {e}"
+#         )
+#
+#     for key in list(msg_df.keys()):
+#         dumpfile = f"{mcap_dir}{key}.csv"
+#         msg_df[key].to_csv(dumpfile, index=False)
+#
+#     return

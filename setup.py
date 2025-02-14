@@ -6,7 +6,7 @@ with open('requirements.txt', 'r') as f:
 setup(
     name="px4-log-tool",
     version="0.5.0",
-    description="A brief description of your project",
+    description="The All-in-One tool to work with PX4 log files.",
     author="Junior Sundar",
     author_email="junior.sundar@tii.ae",
     url="https://github.com/tiiuae/px4-log-tool",
@@ -17,7 +17,6 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            # "px4-log-tool=px4_log_tool.cli:main",
             "px4-log-tool=px4_log_tool.cli:cli",
         ],
     },

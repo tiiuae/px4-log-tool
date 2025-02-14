@@ -1,6 +1,7 @@
 #!/usr/bin python3
 import os
 import json
+from px4_log_tool.processing_modules.converter import convert_ros2bag2csv
 from px4_log_tool.processing_modules.metagen import get_file_metadata
 from px4_log_tool.util.logger import log
 from px4_log_tool.util.components import (
@@ -105,6 +106,18 @@ def ulog_db3(
     csv_db3(verbose=verbose, directory_address=output_dir, filter=filter, output_dir=f"{output_dir}_bags")
     return
 
+
+def db3_csv(
+    verbose: bool,
+    directory_address: str,
+    filter: str,
+):
+    global FILTER
+
+    FILTER = extract_filter(filter_str=filter, verbose=verbose)
+
+    convert_ros2bag2csv(bag_file_address=directory_address, verbose=verbose)
+    return
 
 def generate_ulog_metadata(verbose: bool, directory_address: str, filter: str):
     global FILTER

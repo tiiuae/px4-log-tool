@@ -217,7 +217,6 @@ def get_csv_dirs(csv_dir: str, verbose: bool = False) -> list[str]:
     log(msg=f"Converting [{len(csv_dirs)}] .csv directories.", verbosity=verbose, log_level=0)
     return csv_dirs
 
-
 def convert_dir_ulog_csv(ulog_files: list[tuple[str,str]], output_dir: str, filter: dict, verbose: bool = False):
     """
     Converts a list of `.ulog` files to `.csv` files in parallel.
