@@ -8,7 +8,7 @@ description: The All-in-One tool to work with PX4 log files.
 ## Regular Installation
 
 ```bash
- pip install git+https://github.com/tiiuae/px4-log-tool.git#egg=px4-log-tool
+ pip install px4-log-tool
 ```
 
 ## Developer Mode
