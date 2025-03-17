@@ -304,7 +304,7 @@ def convert_ros2bag2csv(bag_file_address: str, verbose: bool = False):
     topic_id = []
     records = c.execute("SELECT * from({})".format("topics")).fetchall()
     for row in records:
-        if row[1] == "/rosout" or row[1] == "/parameter_events":
+        if row[1] == "/rosout" : 
             topic_names.append("")
             topic_types.append("")
             topic_id.append(None)
