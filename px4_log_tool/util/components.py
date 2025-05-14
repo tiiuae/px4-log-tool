@@ -134,6 +134,18 @@ DEFAULT_FILTER_CONFIG = {
             "capitalise_topics": False,
         },
         "description": "ROS 2 bag parameters"
+    },
+    "metadata_fields": {
+        "default": [
+            "max_altitude",
+            "min_altitude",
+            "average_altitude",
+            "max_speed",
+            "min_speed",
+            "average_speed",
+            "yaw_lock"
+        ],
+        "description": "Metadata fields in `.json` file"
     }
     # To add a new section, simply add a new entry here:
     # "new_feature_params": {
