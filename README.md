@@ -69,6 +69,12 @@ PRINT_LEVEL=2 px4-log-tool --verbose subcommands #shows INFO, WARN, ERROR
 
 This file is necessary for most operations with the CLI tool. This is populated with pertinent information 
 
+You can generate a default `filter.yaml` file in your current working directory by running:
+
+```bash
+px4-log-tool generate-filter-template
+```
+
 ### `.ulog` -> `.csv`
 
 Contains two lists for `whitelist_messages` and `blacklist headers`.
