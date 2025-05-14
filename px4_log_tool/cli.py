@@ -1,8 +1,7 @@
-from tabnanny import verbose
 import click
-from px4_log_tool.processing_modules.converter import convert_ros2bag2csv
 from px4_log_tool.runners import (
     db3_csv,
+    dump_default_template,
     ulog_csv,
     csv_db3,
     generate_ulog_metadata,
@@ -136,6 +135,15 @@ def csv2db3(ctx, directory_address, filter, output_dir):
         click.echo("Verbose mode enabled.")
     csv_db3(verbose=ctx.obj.verbose, directory_address=directory_address, filter=filter, output_dir=output_dir)
 
+@click.command()
+@click.pass_context
+def generate_filter_template(ctx):
+    """
+    Generate a filter.yml template file in CWD.
+    """
+    if ctx.obj.verbose:
+        click.echo("Verbose mode enabled.")
+    dump_default_template(verbose=ctx.obj.verbose, dump_path=None)
 
 # Adding commands to the CLI
 cli.add_command(ulog2csv)
@@ -143,6 +151,7 @@ cli.add_command(csv2db3)
 cli.add_command(ulog2db3)
 cli.add_command(db32csv)
 cli.add_command(generate_metadata)
+cli.add_command(generate_filter_template)
 
 if __name__ == "__main__":
     cli()

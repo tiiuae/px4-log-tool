@@ -18,7 +18,7 @@ def resample_unified(
     resample_params: Dict[str, Any],
     in_place: bool = False,
     verbose: bool = False,
-) -> pd.DataFrame:
+) -> pd.DataFrame | pd.Series:
     """Resamples a unified dataframe based on the message reference and
     resample parameters.
 
@@ -106,85 +106,173 @@ def get_msg_reference(verbose: bool = False):
         log("Case 3 -- If resampling is not desired, please remove the resample flag from the command line.", verbosity=verbose, log_level=2)
         return None
 
-
-def extract_filter(filter_str: str | None, verbose: bool = False):
-    """Extracts filter parameters from a YAML file.
-
-    Args:
-    - filter (str): Path to the YAML filter file.
-    - verbose (bool, optional): Whether to print verbose output. Defaults to False.
-
-    Returns:
-    - None
-    """
-    filter = dict()
-
-    if type(filter_str) is str:
-        with open(filter_str, "r") as f:
-            filter = yaml.safe_load(f)
-    else:
-        filter = {}
-
-    try:
-        _ = filter["whitelist_messages"]
-    except KeyError:
-        log(f"Warning: Missing whitelist_messages in {filter_str}.", verbosity=verbose, log_level=1)
-        log("Using default values.", verbosity=verbose, log_level=1)
-        log("", verbosity=verbose, log_level=1)
-        filter["whitelist_messages"] = ["sensor_combined", "actuator_outputs"]
-    log("Whitelisted topics are:", verbosity=verbose, log_level=0, bold=True)
-    for entry in filter["whitelist_messages"]:
-        log(f"-- {entry}", verbosity=verbose, log_level=0)
-
-    try:
-        _ = filter["blacklist_messages"]
-    except KeyError:
-        log(f"Warning: Missing blacklist_headers in {filter_str}.", verbosity=verbose, log_level=1)
-        log("Using default values.", verbosity=verbose, log_level=1)
-        log("", verbosity=verbose, log_level=1)
-        filter["blacklist_headers"] =[ "timestamp_sample", "device_id", "error_count"]
-    log("Blacklisted headers are:", verbosity=verbose, log_level=0,bold=True)
-    for entry in filter["blacklist_headers"]:
-        log(f"-- {entry}", verbosity=verbose, log_level=0)
-
-    try:
-        _ = filter["resample_params"]["target_frequency_hz"]
-        _ = filter["resample_params"]["num_method"]
-        _ = filter["resample_params"]["cat_method"]
-        _ = filter["resample_params"]["interpolate_numerical"]
-        _ = filter["resample_params"]["interpolate_method"]
-    except KeyError:
-        log(f"Warning: Incomplete resampling parameters provided in {filter_str}.", verbosity=verbose, log_level=1)
-        log("Using default values.", verbosity=verbose, log_level=1)
-        log("", verbosity=verbose, log_level=1)
-        filter["resample_params"] = {
+DEFAULT_FILTER_CONFIG = {
+    "whitelist_messages": {
+        "default": ["sensor_combined", "actuator_outputs"],
+        "description": "Whitelisted topics"
+    },
+    "blacklist_headers": {
+        "default": ["timestamp_sample", "device_id", "error_count"],
+        "description": "Blacklisted headers"
+    },
+    "resample_params": {
+        "default": {
             "target_frequency_hz": 10,
             "num_method": "mean",
             "cat_method": "ffill",
             "interpolate_numerical": True,
             "interpolate_method": "linear",
-        }
-    log("Resampling parameters:", verbosity=verbose, log_level=0)
-    for entry in filter["resample_params"]:
-        log(f"-- {entry}", verbosity=verbose, log_level=0)
-
-    try:
-        _ = filter["bag_params"]["topic_prefix"]
-        _ = filter["bag_params"]["capitalise_topics"]
-    except KeyError:
-        log(f"Warning: No ROS 2 bag parameters provided in {filter_str}.", verbosity=verbose, log_level=1)
-        log("Using default values.", verbosity=verbose, log_level=1)
-        log("", verbosity=verbose, log_level=1)
-        filter["bag_params"] = {
+        },
+        "description": "Resampling parameters"
+        # sub_keys_check is removed as the logic now always merges,
+        # defaulting only missing sub-keys.
+    },
+    "bag_params": {
+        "default": {
             "topic_prefix": "/fmu/out",
             "topic_max_frequency_hz": 100,
             "capitalise_topics": False,
-        }
-    log("ROS 2 bag parameters:", verbosity=verbose, log_level=0)
-    for entry in filter["bag_params"]:
-        log(f"-- {entry}", verbosity=verbose, log_level=0)
+        },
+        "description": "ROS 2 bag parameters"
+    }
+    # To add a new section, simply add a new entry here:
+    # "new_feature_params": {
+    #     "default": {"param1": "value1", "enabled": True},
+    #     "description": "Parameters for New Feature"
+    # }
+}
 
-    return filter
+def dump_template_filter(file_path: str, verbose: bool = False):
+    """
+    Creates a template filter YAML file with default values from the schema.
+
+    Args:
+    - file_path (str, optional): Path where the template file will be saved.
+                                 Defaults to "filter_template.yml" in the current directory.
+    """
+    template_data = {}
+    for key, config_item in DEFAULT_FILTER_CONFIG.items():
+        template_data[key] = config_item["default"]
+    
+    filter_path = os.path.join(file_path, "filter.yaml")
+    try:
+        with open(filter_path, "w") as f:
+            yaml.dump(template_data, f, sort_keys=False, indent=2, default_flow_style=False)
+        log(f"Template filter file created at '{filter_path}'", verbosity=verbose, log_level=0)
+    except IOError as e:
+        log(f"Error writing template file to {filter_path}: {e}", verbosity=verbose, log_level=1)
+
+
+def extract_filter(filter_str: str | None, verbose: bool = False):
+    """
+    Extracts filter parameters from a YAML file, applying defaults from
+    DEFAULT_FILTER_CONFIG for missing or incomplete sections.
+
+    Args:
+    - filter_file_path (str, optional): Path to the YAML filter file.
+                                       If None, all default values are used.
+    - verbose (bool, optional): Whether to print verbose output. Defaults to False.
+
+    Returns:
+    - dict: The loaded and defaulted filter configuration.
+    """
+    user_config = {}
+    config_source_name = "the provided configuration" if filter_str else "default configuration (no file provided)"
+    
+    if isinstance(filter_str, str):
+        config_source_name = f"'{filter_str}'"
+        try:
+            with open(filter_str, "r") as f:
+                loaded_yaml = yaml.safe_load(f)
+            user_config = loaded_yaml if isinstance(loaded_yaml, dict) else {}
+            if loaded_yaml is None: 
+                 user_config = {}
+        except FileNotFoundError:
+            log(f"Warning: Filter file {config_source_name} not found.", verbosity=verbose, log_level=1)
+            log("Using default values for all sections.", verbosity=verbose, log_level=1)
+            if verbose:
+                log("", verbosity=verbose, log_level=1) 
+            user_config = {} 
+        except yaml.YAMLError as e:
+            log(f"Error parsing YAML file {config_source_name}: {e}.", verbosity=verbose, log_level=1)
+            log("Using default values for all sections.", verbosity=verbose, log_level=1)
+            if verbose:
+                log("", verbosity=verbose, log_level=1)
+            user_config = {}
+    elif filter_str is not None: 
+        log(f"Warning: Invalid filter_file_path type ({type(filter_str)}). Expected string or None.", verbosity=verbose, log_level=1)
+        log("Using default values for all sections.", verbosity=verbose, log_level=1)
+        if verbose:
+            log("", verbosity=verbose, log_level=1)
+        user_config = {}
+
+
+    final_filter_config = {}
+
+    for key, schema_item in DEFAULT_FILTER_CONFIG.items():
+        default_value_for_key = deepcopy(schema_item["default"])
+        description = schema_item["description"]
+        
+        section_value_to_assign = None
+
+        if key not in user_config:
+            log(f"Warning: Missing section '{key}' in {config_source_name}.", verbosity=verbose, log_level=1)
+            log("Using default values for this section.", verbosity=verbose, log_level=1)
+            log("", verbosity=verbose, log_level=1)
+            section_value_to_assign = default_value_for_key
+        else:
+            user_section_data = user_config[key]
+            if isinstance(default_value_for_key, dict):
+                if not isinstance(user_section_data, dict):
+                    log(f"Warning: Section '{key}' in {config_source_name} is not a dictionary as expected. User provided type: {type(user_section_data)}.", verbosity=verbose, log_level=1)
+                    log("Using default values for this entire section.", verbosity=verbose, log_level=1)
+                    log("", verbosity=verbose, log_level=1)
+                    section_value_to_assign = default_value_for_key
+                else:
+                    # Both schema default and user input are dictionaries.
+                    # Start with the schema's defaults for this section.
+                    merged_section = deepcopy(default_value_for_key)
+                    
+                    for user_sub_key in user_section_data:
+                        if user_sub_key not in merged_section: # Check against keys in the default dict
+                            log(f"Info: User-provided sub-key '{user_sub_key}' in section '{key}' of {config_source_name} is not defined in the default schema for this section. It will be included.", verbosity=verbose, log_level=0)
+                    
+                    merged_section.update(user_section_data)
+                    
+                    defaulted_sub_keys_this_section = []
+                    for default_sub_k in default_value_for_key: # Iterate over keys in the original default
+                        if default_sub_k not in user_section_data: # Check if user provided it
+                            defaulted_sub_keys_this_section.append(default_sub_k)
+                    
+                    if defaulted_sub_keys_this_section:
+                        log(f"Info: For section '{key}' in {config_source_name}, default values were applied for the following missing sub-key(s): {', '.join(defaulted_sub_keys_this_section)}.", verbosity=verbose, log_level=0)
+                        log("", verbosity=verbose, log_level=1) 
+                             
+                    section_value_to_assign = merged_section
+            else:
+                section_value_to_assign = user_section_data
+        
+        final_filter_config[key] = section_value_to_assign
+
+        log(f"{description}:", verbosity=verbose, log_level=0, bold=True)
+        current_section_data = final_filter_config[key]
+        if isinstance(current_section_data, list):
+            if not current_section_data and verbose : 
+                 log("-- (empty)", verbosity=verbose, log_level=0)
+            for entry in current_section_data:
+                log(f"-- {entry}", verbosity=verbose, log_level=0)
+        elif isinstance(current_section_data, dict):
+            if not current_section_data and verbose: 
+                 log("-- (empty)", verbosity=verbose, log_level=0)
+            for sub_key, sub_value in current_section_data.items():
+                log(f"-- {sub_key}: {sub_value}", verbosity=verbose, log_level=0)
+        else: 
+            log(f"-- {current_section_data}", verbosity=verbose, log_level=0)
+        
+        if verbose: 
+            log("", verbosity=verbose, log_level=0)
+
+    return final_filter_config
 
 
 def get_ulog_files(ulog_dir: str, verbose: bool = False) -> list[tuple[str,str]]:

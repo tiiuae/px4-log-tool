@@ -6,6 +6,7 @@ from px4_log_tool.processing_modules.metagen import get_file_metadata
 from px4_log_tool.util.logger import log
 from px4_log_tool.util.components import (
     convert_dir_csv_db3,
+    dump_template_filter,
     get_csv_dirs,
     get_msg_reference,
     extract_filter,
@@ -146,3 +147,9 @@ def generate_ulog_metadata(verbose: bool, directory_address: str, filter: str):
             with open(json_filepath, "w") as f:
                 json.dump(json_data, f, indent=4)
     return
+
+def dump_default_template(verbose: bool, dump_path: str | None):
+    if dump_path is None:
+        dump_path = os.getcwd()
+
+    dump_template_filter(dump_path, verbose)
