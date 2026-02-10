@@ -347,3 +347,17 @@ SensorCombined,,,,,,,,
 ,,,SensorCombined_gyro_clipping,gyro_clipping,Integer,,Categorical,Bitfield indicating if there was any gyro clipping (per axis) during the integration time frame
 ,,,SensorCombined_accel_calibration_count,accel_calibration_count,Integer,,Categorical,Calibration changed counter. Monotonically increases whenever accelermeter calibration changes.
 ,,,SensorCombined_gyro_calibration_count,gyro_calibration_count,Integer,,Categorical,Calibration changed counter. Monotonically increases whenever rate gyro calibration changes.
+VehicleLandDetected,,,,,,,,
+,,,VehicleLandDetected_timestamp,timestamp,Time,,Numerical,Time since system start
+,,,VehicleLandDetected_freefall,freefall,Boolean,,Categorical,True if vehicle currently in free-fall
+,,,VehicleLandDetected_ground_contact,ground_contact,Boolean,,Categorical,True if vehicle has ground contact but not landed
+,,,VehicleLandDetected_maybe_landed,maybe_landed,Boolean,,Categorical,True if vehicle might have landed
+,,,VehicleLandDetected_landed,landed,Boolean,,Categorical,True if vehicle is currently landed on the ground
+,,,VehicleLandDetected_in_ground_effect,in_ground_effect,Boolean,,Categorical,indicates if from the perspective of the landing detector the vehicle might be in ground effect (baro). This flag will become true if the vehicle is not moving horizontally and is descending (crude assumption that user is landing).
+,,,VehicleLandDetected_is_descend,is_descend,Boolean,,Categorical,
+,,,VehicleLandDetected_has_low_throttle,has_low_throttle,Boolean,,Categorical,
+,,,VehicleLandDetected_vertical_movement,vertical_movement,Boolean,,Categorical,
+,,,VehicleLandDetected_horizontal_movement,horizontal_movement,Boolean,,Categorical,
+,,,VehicleLandDetected_rotational_movement,rotational_movement,Boolean,,Categorical,
+,,,VehicleLandDetected_close_to_ground_or_skipped_check,close_to_ground_or_skipped_check,Boolean,,Categorical,
+,,,VehicleLandDetected_at_rest,at_rest,Boolean,,Categorical,
