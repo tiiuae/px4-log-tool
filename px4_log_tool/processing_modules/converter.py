@@ -9,22 +9,22 @@ import pandas as pd
 from collections import Counter
 from copy import deepcopy
 from pyulog import ULog
-from typing import Dict, List
+from typing import Dict, List, Optional
 from px4_log_tool.util.logger import log
 
 
 def convert_ulog2csv(
     directory_address: str,
     ulog_file_name: str,
-    messages: List[str] | None = None,
+    messages: Optional[List[str]] = None,
     output: str = ".",
     blacklist: List[str] = [],
     delimiter: str = ",",
-    time_s: float | None = None,
-    time_e: float | None = None,
+    time_s: Optional[float] = None,
+    time_e: Optional[float] = None,
     disable_str_exceptions: bool = False,
     verbose: bool = False,
-) -> Dict:
+) -> Dict[str, pd.DataFrame]:
     """
     Converts a PX4 ULog file to CSV files.
 
@@ -45,7 +45,7 @@ def convert_ulog2csv(
     """
 
     ulog_file_name = os.path.join(directory_address, ulog_file_name)
-    msg_filter = messages if messages else None
+    msg_filter: Optional[List[str]] = messages if messages else None
 
     try:
         ulog = ULog(ulog_file_name, msg_filter, disable_str_exceptions)
@@ -60,14 +60,14 @@ def convert_ulog2csv(
         )
         return {}
 
-    output_file_prefix = ulog_file_name
+    output_file_prefix: str = ulog_file_name
     # strip '.ulg' || '.ulog'
     if output_file_prefix.lower().endswith(".ulg"):
         output_file_prefix = output_file_prefix[:-4]
     elif output_file_prefix.lower().endswith(".ulog"):
         output_file_prefix = output_file_prefix[:-5]
 
-    base_name = os.path.basename(output_file_prefix)
+    base_name: str = os.path.basename(output_file_prefix)
     output_file_prefix = os.path.join(output, base_name)
 
     try:
@@ -77,7 +77,7 @@ def convert_ulog2csv(
 
     # Mark duplicated
     if messages is not None:
-        counts = Counter(
+        counts: Counter = Counter(
             [
                 d.name.replace("/", "_")
                 for d in data
@@ -86,10 +86,13 @@ def convert_ulog2csv(
         )
     else:
         counts = Counter([d.name.replace("/", "_") for d in data])
-    redundant_msgs = [string for string, count in counts.items() if count > 1]
-    data_frame_dict = {}
+    redundant_msgs: List[str] = [
+        string for string, count in counts.items() if count > 1
+    ]
+    data_frame_dict: Dict[str, pd.DataFrame] = {}
 
     for d in data:
+        output_file_name: str
         if d.name.replace("/", "_") in redundant_msgs:
             fmt = "{0}/{1}_{2}.csv"
             output_file_name = fmt.format(
@@ -102,7 +105,7 @@ def convert_ulog2csv(
             )
         with open(output_file_name, "w", encoding="utf-8") as csvfile:
             # use same field order as in the log, except for the timestamp
-            data_keys = [f.field_name for f in d.field_data]
+            data_keys: List[str] = [f.field_name for f in d.field_data]
             data_keys.remove("timestamp")
             # Remove blacklisted data_keys
             for entry in blacklist:
@@ -113,25 +116,25 @@ def convert_ulog2csv(
             data_keys.insert(0, "timestamp")  # we want timestamp at first position
 
             # write the header
-            header_keys = deepcopy(data_keys)
+            header_keys: List[str] = deepcopy(data_keys)
             for i in range(len(header_keys)):
                 header_keys[i] = header_keys[i].replace("[", "_")
                 header_keys[i] = header_keys[i].replace("]", "")
             csvfile.write(delimiter.join(header_keys) + "\n")
 
             # get the index for row where timestamp exceeds or equals the required value
-            time_s_i = (
+            time_s_i: int = (
                 np.where(d.data["timestamp"] >= time_s * 1e6)[0][0] if time_s else 0
             )
             # get the index for row upto the timestamp of the required value
-            time_e_i = (
+            time_e_i: int = (
                 np.where(d.data["timestamp"] >= time_e * 1e6)[0][0]
                 if time_e
                 else len(d.data["timestamp"])
             )
 
             # write the data
-            last_elem = len(data_keys) - 1
+            last_elem: int = len(data_keys) - 1
             for i in range(time_s_i, time_e_i):
                 for k in range(len(data_keys)):
                     csvfile.write(str(d.data[data_keys[k]][i]))
@@ -161,6 +164,7 @@ def convert_csv2ros2bag(
 
     Args:
     - directory_address (str): Directory path containing the CSV files.
+    - output_dir (str): Output directory for the ROS 2 bag file.
     - topic_prefix (str): Prefix to the topics in the bag file.
     - capitalise_topics (bool): For compatibility with snake and camelcase topics.
     - verbose (bool): Verbosity of logging.
@@ -185,15 +189,15 @@ def convert_csv2ros2bag(
             )
         return
 
-    def set_msg_field(msg, field_name, value):
+    def set_msg_field(msg: object, field_name: str, value: object) -> None:
         """
         Set the value of a message field, handling nested fields and array
         indices, and ensuring type compatibility.
         """
 
         if "_" in field_name and field_name.split("_")[-1].isdigit():
-            field_base = "_".join(field_name.split("_")[:-1])
-            index = int(field_name.split("_")[-1])
+            field_base: str = "_".join(field_name.split("_")[:-1])
+            index: int = int(field_name.split("_")[-1])
             if hasattr(msg, field_base):
                 array_field = getattr(msg, field_base)
                 if isinstance(array_field, (list, np.ndarray)):
@@ -214,6 +218,7 @@ def convert_csv2ros2bag(
     writer = rosbag2_py.SequentialWriter()
 
     # Catching edge cases where directory_address is a PosixPath
+    bag_name: str
     try:
         bag_name = directory_address.split("/")[-1]
     except AttributeError:
@@ -227,7 +232,9 @@ def convert_csv2ros2bag(
     converter_options = rosbag2_py._storage.ConverterOptions("", "")
     writer.open(storage_options, converter_options)
 
-    csv_files = [f for f in os.listdir(directory_address) if f.endswith(".csv")]
+    csv_files: List[str] = [
+        f for f in os.listdir(directory_address) if f.endswith(".csv")
+    ]
     if len(csv_files) == 0:
         log(
             "Directory does not have any .csv files. Skipping conversion to ROS 2 bag.",
@@ -236,17 +243,18 @@ def convert_csv2ros2bag(
         )
         return
 
-    topic_dict = {}
+    topic_dict: Dict[str, tuple] = {}
     for csv_file in csv_files:
         base_name: str = csv_file.split(".")[0]
-        name = base_name
+        name: str = base_name
         if capitalise_topics:
             name = "".join([comp.capitalize() for comp in base_name.split("_")])
+        topic_name: str
         if base_name[-1].isdigit():
             topic_name = f"{topic_prefix}/{name[:-2]}/f_{base_name[-1]}"
         else:
             topic_name = f"{topic_prefix}/{name}"
-        msg_type = "".join(
+        msg_type: str = "".join(
             part.capitalize() for part in re.sub(r"_\d+", "", base_name).split("_")
         )
         topic_dict[base_name] = (topic_name, msg_type)
@@ -256,7 +264,9 @@ def convert_csv2ros2bag(
         writer.create_topic(topic_info)
 
     for base_name, (topic_name, msg_type) in topic_dict.items():
-        df = pd.read_csv(os.path.join(directory_address, f"{base_name}.csv"))
+        df: pd.DataFrame = pd.read_csv(
+            os.path.join(directory_address, f"{base_name}.csv")
+        )
         try:
             msg_class = getattr(importlib.import_module("px4_msgs.msg"), msg_type)
         except AttributeError:
@@ -269,7 +279,7 @@ def convert_csv2ros2bag(
             writer.write(topic_name, serialize_message(msg), msg.timestamp * 1000)
 
 
-def convert_ros2bag2csv(bag_file_address: str, verbose: bool = False):
+def convert_ros2bag2csv(bag_file_address: str, verbose: bool = False) -> None:
     try:
         import px4_msgs.msg
         from rosidl_runtime_py.utilities import get_message
@@ -289,22 +299,22 @@ def convert_ros2bag2csv(bag_file_address: str, verbose: bool = False):
             )
         return
 
-    files: list[str] = os.listdir(bag_file_address)
-    rosbag_db: str | None = None
+    files: List[str] = os.listdir(bag_file_address)
+    rosbag_db: Optional[str] = None
     for file in files:
         if file.endswith(".db3"):
             rosbag_db = file
     if rosbag_db is None:
         return
-    
+
     conn = sqlite3.connect(os.path.join(bag_file_address, rosbag_db))
     c = conn.cursor()
-    topic_names: list[str] = []
-    topic_types: list[str] = []
-    topic_id = []
+    topic_names: List[str] = []
+    topic_types: List[str] = []
+    topic_id: List[Optional[int]] = []
     records = c.execute("SELECT * from({})".format("topics")).fetchall()
     for row in records:
-        if row[1] == "/rosout" : 
+        if row[1] == "/rosout":
             topic_names.append("")
             topic_types.append("")
             topic_id.append(None)
@@ -318,9 +328,9 @@ def convert_ros2bag2csv(bag_file_address: str, verbose: bool = False):
     for i in range(len(topic_names)):
         if topic_names[i] == "":
             continue
-        time = []
-        count = 0
-        messages = []
+        time: List[int] = []
+        count: int = 0
+        messages: List[bytes] = []
         msg_type = get_message(topic_types[i])
         for row in msg_records:
             if topic_id[i] == row[1]:
@@ -330,20 +340,28 @@ def convert_ros2bag2csv(bag_file_address: str, verbose: bool = False):
         if len(messages) < 1:
             continue
 
-        os.makedirs(os.path.join(bag_file_address , "topic_csvs"), exist_ok=True)
-        csv_file_name: str = topic_names[i].replace("/",".")[1:]
-        with open(f"{bag_file_address }/topic_csvs/{csv_file_name}.csv", "w", newline="") as csvfile:
+        os.makedirs(os.path.join(bag_file_address, "topic_csvs"), exist_ok=True)
+        csv_file_name: str = topic_names[i].replace("/", ".")[1:]
+        with open(
+            f"{bag_file_address}/topic_csvs/{csv_file_name}.csv", "w", newline=""
+        ) as csvfile:
             # Create a CSV writer
             csv_writer = csv.writer(csvfile)
 
             # store header and attribute rows
-            attributes = []
-            header_row = ["ros_timestamp"]
+            attributes: List[str] = []
+            header_row: List[str] = ["ros_timestamp"]
             for key in dir(deserialize_message(messages[0], msg_type)):
-                if key[0] != "_" and key.islower() and key != "get_fields_and_field_types":
+                if (
+                    key[0] != "_"
+                    and key.islower()
+                    and key != "get_fields_and_field_types"
+                ):
                     attributes.append(key)
                     try:
-                        attr_size = getattr(deserialize_message(messages[0], msg_type), key)
+                        attr_size = getattr(
+                            deserialize_message(messages[0], msg_type), key
+                        )
                         if len(attr_size) > 0:
                             for i in range(len(attr_size)):
                                 header_row.append(f"{key}_{i}")
@@ -357,28 +375,29 @@ def convert_ros2bag2csv(bag_file_address: str, verbose: bool = False):
             # Write rows
             for timestamp, message in zip(time, messages):
                 deserialized_msg = deserialize_message(message, msg_type)
-                
-                row = []
-                row.append(timestamp)
+
+                row_data: List[object] = []
+                row_data.append(timestamp)
                 for key in attributes:
                     try:
                         attr_size = getattr(deserialized_msg, key)
                         if len(attr_size) > 0:
                             for i in range(len(attr_size)):
-                                row.append(getattr(deserialized_msg, key)[i])
+                                row_data.append(getattr(deserialized_msg, key)[i])
                             else:
-                                row.append(getattr(deserialized_msg, key)[0])
+                                row_data.append(getattr(deserialized_msg, key)[0])
                     except Exception:
-                        row.append(getattr(deserialized_msg, key))
-                csv_writer.writerow(row)
+                        row_data.append(getattr(deserialized_msg, key))
+                csv_writer.writerow(row_data)
 
     conn.close()
-            
+
+
 ## TODO: REFACTOR
 # import importlib
 # import yaml
 # from glob import glob
-# 
+#
 # def px4_mcap_to_csv(mcap_dir: str) -> None:
 #     """
 #     Convert PX4 MCAP files to CSV format.

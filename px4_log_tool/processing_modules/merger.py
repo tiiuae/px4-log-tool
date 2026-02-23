@@ -2,9 +2,10 @@ import pandas as pd
 import os
 from typing import List
 
+
 def merge_csv(
-        root: str,
-        files: List[str],
+    root: str,
+    files: List[str],
 ) -> None:
     """
     Merges multiple CSV files in a directory, handling column renaming and resampling.
@@ -22,24 +23,24 @@ def merge_csv(
         None. The merged and potentially resampled DataFrame is saved as 'merged.csv' in the 'root' directory.
     """
 
-    merged_df = pd.DataFrame(data={"timestamp": []})
+    merged_df: pd.DataFrame = pd.DataFrame(data={"timestamp": []})
     for file in files:
         if file == "merged.csv":
             continue
 
         data_frame: pd.DataFrame = pd.read_csv(os.path.join(root, file))
 
-        prefix_parts = file.split("_")
-        capitalised_prefix_parts = [prefix_parts[0].capitalize()] + [
+        prefix_parts: List[str] = file.split("_")
+        capitalised_prefix_parts: List[str] = [prefix_parts[0].capitalize()] + [
             part.capitalize() for part in prefix_parts[1:]
         ]
-        joined_prefix = "".join(capitalised_prefix_parts)
+        joined_prefix: str = "".join(capitalised_prefix_parts)
         joined_prefix = joined_prefix.split(".")[0]
 
-        column_names = data_frame.columns
+        column_names: List[str] = list(data_frame.columns)
         column_names = ["timestamp"] + [
             f"{joined_prefix}_{name}"
-            for name in column_names[column_names != "timestamp"]
+            for name in data_frame.columns[data_frame.columns != "timestamp"]
         ]
 
         data_frame.rename(
@@ -50,12 +51,12 @@ def merge_csv(
 
     merged_df.sort_values(by="timestamp", inplace=True)
 
-    mission_name_list = os.path.normpath(root).split(os.sep)
-    mission_name = "/".join(mission_name_list)
+    mission_name_list: List[str] = os.path.normpath(root).split(os.sep)
+    mission_name: str = "/".join(mission_name_list)
     merged_df["mission_name"] = mission_name
 
-    preamble = ["mission_name", "timestamp"]
-    body = sorted([col for col in merged_df.columns if col not in preamble])
+    preamble: List[str] = ["mission_name", "timestamp"]
+    body: List[str] = sorted([col for col in merged_df.columns if col not in preamble])
     merged_df = merged_df[preamble + body]
 
     merged_df.to_csv(os.path.join(root, "merged.csv"), index=False)

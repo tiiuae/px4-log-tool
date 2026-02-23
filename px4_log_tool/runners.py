@@ -1,6 +1,7 @@
 #!/usr/bin python3
 import os
 import json
+from typing import Any, Dict, List, Optional
 from px4_log_tool.processing_modules.converter import convert_ros2bag2csv
 from px4_log_tool.processing_modules.metagen import get_file_metadata
 from px4_log_tool.util.logger import log
@@ -19,23 +20,25 @@ from px4_log_tool.util.components import (
 import shutil
 
 
-FILTER = dict()
+FILTER: Dict[str, Any] = dict()
 
 
 def ulog_csv(
     verbose: bool,
     ulog_dir: str,
-    filter: str,
-    output_dir: str | None,
+    filter: Optional[str],
+    output_dir: Optional[str],
     merge: bool = False,
     clean: bool = False,
     resample: bool = False,
-):
+) -> None:
     global FILTER
 
     FILTER = extract_filter(filter_str=filter, verbose=verbose)
 
-    ulog_files: list[tuple[str,str]] = get_ulog_files(ulog_dir=ulog_dir, verbose=verbose)
+    ulog_files: list[tuple[str, str]] = get_ulog_files(
+        ulog_dir=ulog_dir, verbose=verbose
+    )
 
     if output_dir is None:
         output_dir = "./output_dir"
@@ -67,13 +70,13 @@ def ulog_csv(
 def csv_db3(
     verbose: bool,
     directory_address: str,
-    filter: str,
-    output_dir: str | None,
-):
+    filter: Optional[str],
+    output_dir: Optional[str],
+) -> None:
     global FILTER
 
     FILTER = extract_filter(filter_str=filter, verbose=verbose)
-    csv_dirs = get_csv_dirs(csv_dir=directory_address, verbose=verbose)
+    csv_dirs: List[str] = get_csv_dirs(csv_dir=directory_address, verbose=verbose)
 
     if output_dir is None:
         log(".db3 ROS 2 Bags will be created in-place.", log_level=1, verbosity=verbose)
@@ -92,27 +95,37 @@ def csv_db3(
 def ulog_db3(
     verbose: bool,
     directory_address: str,
-    filter: str,
-    output_dir: str | None,
-):
+    filter: Optional[str],
+    output_dir: Optional[str],
+) -> None:
     global FILTER
 
     if output_dir is None:
         output_dir = "./output_dir"
-    ulog_csv(verbose=verbose, ulog_dir=directory_address, filter=filter, output_dir=output_dir)
+    ulog_csv(
+        verbose=verbose,
+        ulog_dir=directory_address,
+        filter=filter,
+        output_dir=output_dir,
+    )
 
     log("ROS 2 Bag topics will be adjusted.", log_level=0, verbosity=verbose)
     adjust_topics(verbose=verbose, directory_address=output_dir, filter=FILTER)
 
-    csv_db3(verbose=verbose, directory_address=output_dir, filter=filter, output_dir=f"{output_dir}_bags")
+    csv_db3(
+        verbose=verbose,
+        directory_address=output_dir,
+        filter=filter,
+        output_dir=f"{output_dir}_bags",
+    )
     return
 
 
 def db3_csv(
     verbose: bool,
     directory_address: str,
-    filter: str,
-):
+    filter: Optional[str],
+) -> None:
     global FILTER
 
     FILTER = extract_filter(filter_str=filter, verbose=verbose)
@@ -120,22 +133,29 @@ def db3_csv(
     convert_ros2bag2csv(bag_file_address=directory_address, verbose=verbose)
     return
 
-def generate_ulog_metadata(verbose: bool, directory_address: str, filter: str):
+
+def generate_ulog_metadata(
+    verbose: bool,
+    directory_address: str,
+    filter: Optional[str],
+) -> None:
     global FILTER
 
     FILTER = extract_filter(filter_str=filter, verbose=verbose)
 
-    metadata_fields = FILTER["metadata_fields"]
+    metadata_fields: List[str] = FILTER["metadata_fields"]
     for dirpath, _, filenames in os.walk(directory_address):
         if len(filenames) > 0:
-            mission_data = []
+            mission_data: List[Dict[str, Any]] = []
             for file in filenames:
                 if file.split(".")[-1] == "ulg" or file.split(".")[-1] == "ulog":
-                    mission_metadata = get_file_metadata(metadata_fields, dirpath, file)
+                    mission_metadata: Dict[str, Any] = get_file_metadata(
+                        metadata_fields, dirpath, file
+                    )
                     mission_metadata["mission_name"] = file.split(".")[0]
                     mission_data.append(mission_metadata)
             mission_data.sort(key=lambda x: x["mission_name"])
-            json_data = {
+            json_data: Dict[str, Any] = {
                 "mission": mission_data,
                 "total_duration": sum(item["duration"] for item in mission_data),
                 "average_duration": sum(item["duration"] for item in mission_data)
@@ -143,12 +163,13 @@ def generate_ulog_metadata(verbose: bool, directory_address: str, filter: str):
                 if mission_data
                 else 0,
             }
-            json_filepath = os.path.join(dirpath, "metadata.json")
+            json_filepath: str = os.path.join(dirpath, "metadata.json")
             with open(json_filepath, "w") as f:
                 json.dump(json_data, f, indent=4)
     return
 
-def dump_default_template(verbose: bool, dump_path: str | None):
+
+def dump_default_template(verbose: bool, dump_path: Optional[str]) -> None:
     if dump_path is None:
         dump_path = os.getcwd()
 

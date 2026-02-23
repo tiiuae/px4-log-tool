@@ -2,26 +2,30 @@ import os
 from datetime import datetime
 
 # Environment configuration
-print_level = int(os.getenv("PRINT_LEVEL", "0"))
-enable_colors = os.getenv("LOG_COLORS", "true").lower() == "true"
+print_level: int = int(os.getenv("PRINT_LEVEL", "0"))
+enable_colors: bool = os.getenv("LOG_COLORS", "true").lower() == "true"
+
 
 class ColorCodes:
-    RESET = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    CYAN = '\033[96m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    CYAN = "\033[96m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+
 
 LOG_LEVELS = {
     0: ("INFO", ColorCodes.GREEN),
     1: ("WARN", ColorCodes.YELLOW),
-    2: ("ERROR", ColorCodes.RED)
+    2: ("ERROR", ColorCodes.RED),
 }
+
 
 def get_timestamp() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
 
 def log(
     msg: str,
@@ -30,8 +34,8 @@ def log(
     bold: bool = False,
     underline: bool = False,
     timestamped: bool = True,
-    color: bool = True
-):
+    color: bool = True,
+) -> None:
     # Original abs() logic
     if not verbosity:
         if abs(log_level - 2) > print_level:
@@ -42,18 +46,24 @@ def log(
     level_name, level_color = level_info
 
     # Create timestamp
-    timestamp = f"{ColorCodes.CYAN}{get_timestamp()}{ColorCodes.RESET}" if enable_colors else get_timestamp()
-    
+    timestamp: str = (
+        f"{ColorCodes.CYAN}{get_timestamp()}{ColorCodes.RESET}"
+        if enable_colors
+        else get_timestamp()
+    )
+
     # Format level prefix
-    colored_level = f"{level_color}{level_name}{ColorCodes.RESET}" if enable_colors else level_name
-    
+    colored_level: str = (
+        f"{level_color}{level_name}{ColorCodes.RESET}" if enable_colors else level_name
+    )
+
     # Apply text formatting
-    formatted_msg = msg
+    formatted_msg: str = msg
     if bold:
         formatted_msg = f"{ColorCodes.BOLD}{formatted_msg}{ColorCodes.RESET}"
     if underline:
         formatted_msg = f"{ColorCodes.UNDERLINE}{formatted_msg}{ColorCodes.RESET}"
-    
+
     # Construct final message
     if color:
         formatted_msg = f"{colored_level}  {formatted_msg}"

@@ -1,24 +1,25 @@
 import click
+from typing import Optional
 from px4_log_tool.runners import (
     db3_csv,
     dump_default_template,
     ulog_csv,
     csv_db3,
     generate_ulog_metadata,
-    ulog_db3
+    ulog_db3,
 )
 
 
 # Context object to store verbose flag
 class CLIContext:
-    def __init__(self):
+    def __init__(self) -> None:
         self.verbose: bool = False
 
 
 @click.group()
 @click.option("--verbose", is_flag=True, help="Enable verbose output.")
 @click.pass_context
-def cli(ctx, verbose):
+def cli(ctx: click.Context, verbose: bool) -> None:
     """
     px4-log-tool CLI Tool
     """
@@ -56,13 +57,29 @@ def cli(ctx, verbose):
     help="Module creates mirror directory tree of one with ULOGs with the CSV files in corresponding locations",
 )
 @click.pass_context
-def ulog2csv(ctx, directory_address, resample, clean, merge, filter, output_dir):
+def ulog2csv(
+    ctx: click.Context,
+    directory_address: str,
+    resample: bool,
+    clean: bool,
+    merge: bool,
+    filter: Optional[str],
+    output_dir: Optional[str],
+) -> None:
     """
     Convert ulog files to CSV in DIRECTORY_ADDRESS using FILTER.
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
-    ulog_csv(verbose=ctx.obj.verbose, ulog_dir=directory_address, filter=filter, output_dir=output_dir, merge=merge, clean=clean, resample=resample)
+    ulog_csv(
+        verbose=ctx.obj.verbose,
+        ulog_dir=directory_address,
+        filter=filter,
+        output_dir=output_dir,
+        merge=merge,
+        clean=clean,
+        resample=resample,
+    )
 
 
 @click.command()
@@ -77,13 +94,24 @@ def ulog2csv(ctx, directory_address, resample, clean, merge, filter, output_dir)
     type=click.Path(exists=False),
     help="Create mirror directory tree of CSVs directory and populate with DB3 bags. Operation in-place if none provided.",
 )
-def ulog2db3(ctx, directory_address, filter, output_dir):
+def ulog2db3(
+    ctx: click.Context,
+    directory_address: str,
+    filter: Optional[str],
+    output_dir: Optional[str],
+) -> None:
     """
     Convert ulog files to DB3 in DIRECTORY_ADDRESS using FILTER.
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
-    ulog_db3(verbose=ctx.obj.verbose, directory_address=directory_address, filter=filter, output_dir=output_dir)
+    ulog_db3(
+        verbose=ctx.obj.verbose,
+        directory_address=directory_address,
+        filter=filter,
+        output_dir=output_dir,
+    )
+
 
 @click.command()
 @click.argument("directory_address", type=click.Path(exists=True))
@@ -91,7 +119,11 @@ def ulog2db3(ctx, directory_address, filter, output_dir):
     "-f", "--filter", type=click.Path(exists=True), help="Path to the filter YAML file."
 )
 @click.pass_context
-def db32csv(ctx, directory_address, filter):
+def db32csv(
+    ctx: click.Context,
+    directory_address: str,
+    filter: Optional[str],
+) -> None:
     """
     Convert DB3 files to CSV in DIRECTORY_ADDRESS using FILTER.
     """
@@ -106,13 +138,19 @@ def db32csv(ctx, directory_address, filter):
     "-f", "--filter", type=click.Path(exists=True), help="Path to the filter YAML file."
 )
 @click.pass_context
-def generate_metadata(ctx, directory_address, filter):
+def generate_metadata(
+    ctx: click.Context,
+    directory_address: str,
+    filter: Optional[str],
+) -> None:
     """
     Generate metadata.json for ulog files in DIRECTORY_ADDRESS with metadata fields in FILTER. This operation is in place, so the .json files will be added into the provided directory.
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
-    generate_ulog_metadata(verbose=ctx.obj.verbose, directory_address=directory_address, filter=filter)
+    generate_ulog_metadata(
+        verbose=ctx.obj.verbose, directory_address=directory_address, filter=filter
+    )
 
 
 @click.command()
@@ -127,23 +165,35 @@ def generate_metadata(ctx, directory_address, filter):
     help="Create mirror directory tree of CSVs directory and populate with DB3 bags. Operation in-place if none provided.",
 )
 @click.pass_context
-def csv2db3(ctx, directory_address, filter, output_dir):
+def csv2db3(
+    ctx: click.Context,
+    directory_address: str,
+    filter: Optional[str],
+    output_dir: Optional[str],
+) -> None:
     """
     Convert and merge CSV files in a directory into ROS 2 bag DB3 files in DIRECTORY_ADDRESS.
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
-    csv_db3(verbose=ctx.obj.verbose, directory_address=directory_address, filter=filter, output_dir=output_dir)
+    csv_db3(
+        verbose=ctx.obj.verbose,
+        directory_address=directory_address,
+        filter=filter,
+        output_dir=output_dir,
+    )
+
 
 @click.command()
 @click.pass_context
-def generate_filter_template(ctx):
+def generate_filter_template(ctx: click.Context) -> None:
     """
     Generate a filter.yml template file in CWD.
     """
     if ctx.obj.verbose:
         click.echo("Verbose mode enabled.")
     dump_default_template(verbose=ctx.obj.verbose, dump_path=None)
+
 
 # Adding commands to the CLI
 cli.add_command(ulog2csv)
