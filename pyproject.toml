@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "px4-log-tool"
+version = "0.6.4"
+description = "The All-in-One tool to work with PX4 log files."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Junior Sundar", email = "junior.sundar@tii.ae" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = "==3.10.12"
+dependencies = [
+    "Cython>=0.29.21",
+    "pyulog==1.0.1",
+    "PyYAML==6.0.2",
+    "pandas==2.1.2",
+    "numpy==1.26.1",
+    "click==8.1.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.2",
+    "black>=20.8b1",
+]
+
+[project.urls]
+Homepage = "https://github.com/tiiuae/px4-log-tool"
+
+[project.scripts]
+px4-log-tool = "px4_log_tool.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+px4_log_tool = ["msg_reference.csv"]
