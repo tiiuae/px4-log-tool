@@ -4,7 +4,7 @@ build-backend = "setuptools.backends.legacy:build"
 
 [project]
 name = "px4-log-tool"
-version = "0.6.4"
+version = "0.6.5"
 description = "The All-in-One tool to work with PX4 log files."
 readme = "README.md"
 license = { text = "MIT" }
